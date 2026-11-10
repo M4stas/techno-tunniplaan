@@ -35,4 +35,11 @@ class TimetableBuilderTest {
     @Test fun doublePeriodAtDayEnd() { val r = Fixtures.raw(); val t = build(r.copy(cards = r.cards.map { if (it.id == "c7") it.copy(lessonid = "*1") else it })); val l = t.lessons.single { it.day == 4 }; assertEquals(6, l.lastPeriod); assertEquals(LocalTime.of(14, 15), l.end) }
     @Test fun twoDaysInOneCard() { val r = Fixtures.raw(); val t = build(r.copy(cards = r.cards.map { if (it.id == "c7") it.copy(days = "000011") else it })); assertEquals(8, t.lessons.size); assertTrue(t.hasSaturday) }
     @Test fun badPeriodTimeIsDropped() { val r = Fixtures.raw(); val t = build(r.copy(periods = r.periods.map { if (it.period == "1") it.copy(starttime = "x") else it })); assertEquals(5, t.lessons.size); assertTrue(t.lessons.none { it.start == LocalTime.of(8, 30) }) }
+    @Test fun outOfRangePeriodTimeIsDropped() {
+        val r = Fixtures.raw()
+        val t = build(r.copy(periods = r.periods.map { if (it.period == "6") it.copy(endtime = "24:00") else it }))
+        assertEquals(listOf(1, 2, 3, 4, 5), t.periods.map { it.number })
+        assertEquals(6, t.lessons.size)
+        assertTrue(t.lessons.none { it.day == 4 })
+    }
 }

@@ -5,6 +5,7 @@ import io.github.m4stas.technotunniplaan.edupage.RawTimetable
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.format.ResolverStyle
 import java.util.Locale
 
 fun entityKey(name: String): String = name.lowercase(Locale.ROOT).trim().split(Regex("\\s+")).sorted().joinToString(" ")
@@ -17,7 +18,7 @@ fun buildTimetable(raw: RawTimetable, monday: LocalDate, name: String): Timetabl
     val subjects = raw.subjects.associateBy { it.id }
     val groups = raw.groups.associateBy { it.id }
     val lessonRows = raw.lessons.associateBy { it.id }
-    val format = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
+    val format = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT).withResolverStyle(ResolverStyle.STRICT)
     val periods = raw.periods.mapNotNull { row ->
         val number = row.period.toIntOrNull() ?: return@mapNotNull null
         if (!row.starttime.matches(Regex("\\d{2}:\\d{2}")) || !row.endtime.matches(Regex("\\d{2}:\\d{2}"))) return@mapNotNull null
