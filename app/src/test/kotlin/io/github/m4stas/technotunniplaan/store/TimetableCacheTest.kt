@@ -29,6 +29,10 @@ class TimetableCacheTest {
         invalid.writeText("""{"version":9}""")
         assertEquals(listOf(Fixtures.week2()), cache.readAll())
         assertFalse(invalid.exists())
+        val badDate = File(dir, "week-2026-11-23.json")
+        badDate.writeText(File(dir, "week-2026-11-16.json").readText().replace("\"monday\":\"2026-11-16\"", "\"monday\":\"2026-13-40\""))
+        assertEquals(listOf(Fixtures.week2()), cache.readAll())
+        assertFalse(badDate.exists())
         assertTrue(TimetableCache(File(dir, "missing")).readAll().isEmpty())
     }
 
