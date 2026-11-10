@@ -1,0 +1,54 @@
+{"r":{"rights":{},"dbiAccessorRes":{"tables":[
+{"id":"globals","def":{},"data_rows":[{"id":"1","name":"Näidiskool"}]},
+{"id":"periods","def":{},"data_rows":[
+{"id":"1","period":"1","starttime":"08:30","endtime":"09:15","printinsummary":true},
+{"id":"2","period":"2","starttime":"09:15","endtime":"10:00","printinsummary":true},
+{"id":"3","period":"3","starttime":"10:15","endtime":"11:00","printinsummary":true},
+{"id":"4","period":"4","starttime":"11:00","endtime":"11:45","printinsummary":true},
+{"id":"5","period":"5","starttime":"12:45","endtime":"13:30","printinsummary":true},
+{"id":"6","period":"6","starttime":"13:30","endtime":"14:15","printinsummary":true}]},
+{"id":"classes","def":{},"data_rows":[
+{"id":"-1","name":"K-XX-24A","short":"K-XX-24A"},
+{"id":"-2","name":"K-XX-24B","short":"K-XX-24B"}]},
+{"id":"teachers","def":{},"data_rows":[
+{"id":"-10","name":"Mari Näidis","short":"MN"},
+{"id":"-11","name":"Jaan Proov","short":"JP"},
+{"id":"-12","name":"Tiit Katse","short":"TK"}]},
+{"id":"classrooms","def":{},"data_rows":[
+{"id":"-20","name":"X-101","short":"101"},
+{"id":"-21","name":"X-102","short":"102"},
+{"id":"-22","name":"X-103","short":"103"}]},
+{"id":"subjects","def":{},"data_rows":[
+{"id":"-30","name":"Matemaatika","short":"Mat"},
+{"id":"-31","name":"Inglise keel","short":"Ing"},
+{"id":"-32","name":"Programmeerimine","short":"Prog"},
+{"id":"-33","name":"Kehaline kasvatus","short":"Keh"}]},
+{"id":"groups","def":{},"data_rows":[
+{"id":"*1","name":"Terve klass","classid":"-1","entireclass":true},
+{"id":"*2","name":"Grupp 1","classid":"-1"},
+{"id":"*3","name":"Grupp 2","classid":"-1"},
+{"id":"*4","name":"Terve klass","classid":"-2","entireclass":true},
+{"id":"*5","name":"Grupp 1","classid":"-2"},
+{"id":"*6","name":"Grupp 2","classid":"-2"}]},
+{"id":"divisions","def":{},"data_rows":[
+{"id":"-1:","classid":"-1","groupids":["*1"]},
+{"id":"-1:1","classid":"-1","groupids":["*2","*3"]},
+{"id":"-2:","classid":"-2","groupids":["*4"]},
+{"id":"-2:1","classid":"-2","groupids":["*5","*6"]}]},
+{"id":"lessons","def":{},"data_rows":[
+{"id":"*1","subjectid":"-30","teacherids":["-10"],"groupids":["*1"],"classids":["-1"],"durationperiods":2},
+{"id":"*2","subjectid":"-31","teacherids":["-11"],"groupids":["*2"],"classids":["-1"],"durationperiods":1},
+{"id":"*3","subjectid":"-31","teacherids":["-12"],"groupids":["*3"],"classids":["-1"],"durationperiods":1},
+{"id":"*4","subjectid":"-33","teacherids":["-10","-11"],"groupids":["*1","*4"],"classids":["-1","-2"],"durationperiods":2},
+{"id":"*5","subjectid":"-32","teacherids":["-12"],"groupids":["*4"],"classids":["-2"],"durationperiods":1},
+{"id":"*6","subjectid":"-30","teacherids":["-10"],"groupids":["*1"],"classids":["-1"],"durationperiods":2},
+{"id":"*7","subjectid":"-32","teacherids":["-12"],"groupids":["*1"],"classids":["-1"],"durationperiods":1}]},
+{"id":"cards","def":{},"data_rows":[
+{"id":"c1","lessonid":"*1","period":"1","days":"100000","classroomids":["-20"]},
+{"id":"c2","lessonid":"*2","period":"3","days":"100000","classroomids":["-21"]},
+{"id":"c3","lessonid":"*3","period":"3","days":"100000","classroomids":["-22"]},
+{"id":"c4","lessonid":"*4","period":"5","days":"010000","classroomids":[]},
+{"id":"c5","lessonid":"*5","period":"1","days":"010000","classroomids":["-21"]},
+{"id":"c6","lessonid":"*6","period":"","days":"","classroomids":[]},
+{"id":"c7","lessonid":"*7","period":"6","days":"000010","classroomids":["-20"]},
+{"id":"c8","lessonid":"*1","period":"3","days":"001000","classroomids":["-20"]}]}]}}}
