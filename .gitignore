@@ -1,0 +1,22 @@
+# Secrets and machine-specific files
+local.properties
+*.jks
+*.keystore
+keystore.properties
+.env
+.env.*
+
+# Build output
+.gradle/
+build/
+*.apk
+*.aab
+
+# IDE and OS
+.idea/
+*.iml
+.DS_Store
+
+# Captured EduPage responses must never be committed
+*.edupage.json
+captures/
