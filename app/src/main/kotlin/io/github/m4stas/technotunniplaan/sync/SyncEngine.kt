@@ -28,21 +28,24 @@ class SyncEngine(
     private val mutex = Mutex()
 
     suspend fun sync(): SyncResult = mutex.withLock {
-        try {
+        val weeks = try {
             val today = LocalDate.now(clock.withZone(SCHOOL_ZONE))
-            val selected = selectWeeks(api.publishedTimetables(today.year), today)
-            val weeks = selected.map { buildTimetable(api.timetable(it.ttNum), it.monday, it.name) }
-            if (weeks.isNotEmpty()) repository.replace(weeks)
-            settings.update { it.copy(lastSyncMillis = clock.millis(), lastSyncError = null) }
-            onChanged()
-            SyncResult.Success
+            selectWeeks(api.publishedTimetables(today.year), today)
+                .map { buildTimetable(api.timetable(it.ttNum), it.monday, it.name) }
         } catch (e: IOException) {
-            settings.update { it.copy(lastSyncError = SyncError.NETWORK) }
-            SyncResult.Failed(SyncError.NETWORK)
+            return@withLock fail(SyncError.NETWORK)
         } catch (e: EduPageFormatException) {
-            settings.update { it.copy(lastSyncError = SyncError.FORMAT) }
-            SyncResult.Failed(SyncError.FORMAT)
+            return@withLock fail(SyncError.FORMAT)
         }
+        if (weeks.isNotEmpty()) repository.replace(weeks)
+        settings.update { it.copy(lastSyncMillis = clock.millis(), lastSyncError = null) }
+        onChanged()
+        SyncResult.Success
+    }
+
+    private suspend fun fail(error: SyncError): SyncResult {
+        settings.update { it.copy(lastSyncError = error) }
+        return SyncResult.Failed(error)
     }
 
     suspend fun syncIfStale(maxAge: Duration = Duration.ofMinutes(30)): SyncResult? {

@@ -37,7 +37,8 @@ class SyncEngineTest {
         val settings = SettingsStore(PreferenceDataStoreFactory.create(scope = scope.backgroundScope, produceFile = { File(tmp.root, "settings.preferences_pb") }))
         val api = FakeApi(viewer, mutableMapOf("22" to Fixtures.raw()))
         var changed = 0
-        val engine = SyncEngine(api, repository, settings, clock) { changed++ }
+        var onChanged: suspend () -> Unit = {}
+        val engine = SyncEngine(api, repository, settings, clock) { changed++; onChanged() }
         fun cached() = TimetableCache(dir).readAll()
         val old = buildTimetable(Fixtures.raw(), Fixtures.MONDAY.minusWeeks(1), "Nädal10")
     }
@@ -91,6 +92,14 @@ class SyncEngineTest {
         s.api.entries = viewer + later
         assertEquals(SyncResult.Failed(SyncError.FORMAT), s.engine.sync())
         assertEquals(listOf(s.old), s.cached())
+    }
+    @Test fun callbackErrorIsNotASyncFailure() = runTest {
+        val s = Setup(this)
+        s.onChanged = { throw IOException("callback") }
+        val thrown = runCatching { s.engine.sync() }.exceptionOrNull()
+        assertEquals("callback", (thrown as IOException).message)
+        assertNull(s.settings.settings.first().lastSyncError)
+        assertEquals(listOf(Fixtures.MONDAY), s.cached().map { it.monday })
     }
     @Test fun emptyListKeepsCache() = runTest {
         val s = Setup(this)
