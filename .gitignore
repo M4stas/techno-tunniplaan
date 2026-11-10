@@ -17,6 +17,10 @@ build/
 *.iml
 .DS_Store
 
+# Agent scratch space: execution ledgers, task briefs, worktrees
+.superpowers/
+.worktrees/
+
 # Captured EduPage responses must never be committed
 *.edupage.json
 captures/
