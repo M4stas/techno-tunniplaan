@@ -103,4 +103,56 @@ class AppShellTest {
         assertEquals(Routes.ONBOARDING, route())
         assertEquals(Fixtures.MARI, compose.runOnIdle { open })
     }
+
+    @Test fun recoveredHomeReplacesInitialOnboarding() {
+        home = null
+        compose.setContent { Shell() }
+        assertEquals(Routes.ONBOARDING, route())
+        compose.runOnIdle { home = Fixtures.CLASS_A }
+        assertEquals(Routes.HOME, route())
+        assertNull(compose.runOnIdle { nav.previousBackStackEntry })
+        tap("Browse")
+        assertEquals(Routes.BROWSE, route())
+        back()
+        assertEquals(Routes.HOME, route())
+        assertNull(compose.runOnIdle { nav.previousBackStackEntry })
+    }
+
+    @Test fun pendingEntityOpensAboveRecoveredHome() {
+        home = null
+        open = Fixtures.MARI
+        compose.setContent { Shell() }
+        assertEquals(Routes.ONBOARDING, route())
+        compose.runOnIdle { home = Fixtures.CLASS_A }
+        assertEquals("TEACHER" to "mari näidis", entityArgs())
+        assertNull(compose.runOnIdle { open })
+        back()
+        assertEquals(Routes.HOME, route())
+        assertNull(compose.runOnIdle { nav.previousBackStackEntry })
+    }
+
+    @Test fun pendingHomeRequestReplacesInitialOnboarding() {
+        home = null
+        open = Fixtures.CLASS_A
+        compose.setContent { Shell() }
+        assertEquals(Routes.ONBOARDING, route())
+        compose.runOnIdle { home = Fixtures.CLASS_A }
+        assertEquals(Routes.HOME, route())
+        assertNull(compose.runOnIdle { open })
+        assertNull(compose.runOnIdle { nav.previousBackStackEntry })
+    }
+
+    @Test fun deliberateChangeHomeStaysOpenDuringSettingsRecovery() {
+        compose.setContent { Shell() }
+        tap("Settings")
+        compose.runOnIdle { nav.navigate(Routes.ONBOARDING) }
+        assertEquals(Routes.ONBOARDING, route())
+        compose.runOnIdle { home = null }
+        compose.runOnIdle { home = Fixtures.CLASS_A }
+        assertEquals(Routes.ONBOARDING, route())
+        compose.runOnIdle { home = Fixtures.CLASS_B }
+        assertEquals(Routes.ONBOARDING, route())
+        back()
+        assertEquals(Routes.SETTINGS, route())
+    }
 }

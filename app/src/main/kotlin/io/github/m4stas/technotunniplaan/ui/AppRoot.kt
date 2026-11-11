@@ -115,9 +115,8 @@ object Routes {
                     val state by vm.state.collectAsStateWithLifecycle()
                     val picked by vm.picked.collectAsStateWithLifecycle()
                     LaunchedEffect(picked) {
-                        if (picked != null) {
-                            if (initialHome != null && nav.previousBackStackEntry != null) nav.popBackStack()
-                            else nav.navigate(Routes.HOME) { popUpTo(Routes.ONBOARDING) { inclusive = true } }
+                        if (picked != null && initialHome != null && nav.previousBackStackEntry != null) {
+                            nav.popBackStack()
                         }
                     }
                     OnboardingScreen(state, vm::chooseRole, vm::back, vm::setQuery, vm::pick, vm::retry)
@@ -144,6 +143,9 @@ object Routes {
     val entry by nav.currentBackStackEntryAsState()
     val hasHome = home != null
     LaunchedEffect(openEntity, hasHome) {
+        if (hasHome && nav.currentBackStackEntry?.destination?.route == Routes.ONBOARDING && nav.previousBackStackEntry == null) {
+            nav.navigate(Routes.HOME) { popUpTo(Routes.ONBOARDING) { inclusive = true }; launchSingleTop = true }
+        }
         if (openEntity != null && hasHome) {
             nav.navigate(if (openEntity == home) Routes.HOME else Routes.entity(openEntity)) { popUpTo(Routes.HOME); launchSingleTop = true }
             onOpened()
