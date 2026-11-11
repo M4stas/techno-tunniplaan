@@ -18,7 +18,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun DayView(state: TimetableUiState, onSelectDate: (LocalDate) -> Unit, onRefresh: () -> Unit) {
+@Composable fun DayView(state: TimetableUiState, onSelectDate: (LocalDate) -> Unit, onRefresh: () -> Unit, onLessonClick: (io.github.m4stas.technotunniplaan.schedule.Lesson) -> Unit = {}) {
     val p = LocalPalette.current
     if (state.days.isEmpty()) { PullToRefreshBox(state.refreshing, onRefresh, Modifier.fillMaxSize().testTag("day-list")) { Text(stringResource(R.string.no_lessons), color = p.text) }; return }
     val selectedIndex = state.days.indexOfFirst { it.date == state.selectedDate }.coerceAtLeast(0)
@@ -38,7 +38,7 @@ import java.time.format.DateTimeFormatter
                 val day = state.days[index]
                 LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(16.dp)) {
                     if (day.rows.isEmpty()) item { Text(stringResource(R.string.no_lessons), color = p.text) }
-                    items(day.rows.size) { row -> Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { day.rows[row].forEach { lesson -> LessonCard(lesson, state.entity, lesson == day.highlight, Modifier.weight(1f)) } } }
+                    items(day.rows.size) { row -> Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { day.rows[row].forEach { lesson -> LessonCard(lesson, state.entity, lesson == day.highlight, Modifier.weight(1f), onLessonClick) } } }
                 }
             }
         }

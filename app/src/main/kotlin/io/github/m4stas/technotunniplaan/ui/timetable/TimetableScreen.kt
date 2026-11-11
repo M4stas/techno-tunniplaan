@@ -6,13 +6,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.*
 import androidx.compose.ui.unit.dp
 import io.github.m4stas.technotunniplaan.R
 import io.github.m4stas.technotunniplaan.schedule.EntityRef
+import io.github.m4stas.technotunniplaan.schedule.Lesson
 import io.github.m4stas.technotunniplaan.store.ViewMode
 import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
 import java.time.LocalDate
@@ -20,6 +21,8 @@ import java.time.LocalDate
 @Composable fun TimetableScreen(state: TimetableUiState, onSelectDate: (LocalDate) -> Unit, onViewMode: (ViewMode) -> Unit, onRefresh: () -> Unit,
     onToggleFavourite: () -> Unit, onOpenEntity: (EntityRef) -> Unit, onPickAgain: () -> Unit, onBack: (() -> Unit)?) {
     val p = LocalPalette.current
+    var openLesson by remember { mutableStateOf<Lesson?>(null) }
+    openLesson?.let { LessonDetailSheet(it, { openLesson = null }, onOpenEntity) }
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (onBack != null) IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.timetable_back), tint = p.text) }
@@ -44,7 +47,8 @@ import java.time.LocalDate
             }
             if (state.weekIsOutdated) Text(stringResource(R.string.week_outdated), Modifier.padding(horizontal = 16.dp), color = p.textSecondary)
             if (state.syncError != null) Text(stringResource(R.string.update_failed), Modifier.testTag("banner-sync-error").padding(16.dp), color = p.error)
-            if (state.viewMode == ViewMode.DAY) DayView(state, onSelectDate, onRefresh)
+            if (state.viewMode == ViewMode.DAY) DayView(state, onSelectDate, onRefresh) { openLesson = it }
+            else WeekView(state.grid) { openLesson = it }
         }
     }
 }
