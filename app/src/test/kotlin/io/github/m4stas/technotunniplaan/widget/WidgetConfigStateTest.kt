@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.mutablePreferencesOf
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.m4stas.technotunniplaan.Fixtures
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class WidgetConfigStateTest {
@@ -22,5 +23,12 @@ class WidgetConfigStateTest {
     @Test fun removesPreviousEntity() {
         val prefs = mutablePreferencesOf().apply { put(WidgetConfig(Fixtures.MARI, 3)); put(WidgetConfig()) }
         assertEquals(WidgetConfig(), prefs.toWidgetConfig())
+    }
+    @Test fun redrawMarkChangesStateButNotConfig() {
+        val config = WidgetConfig(Fixtures.MARI, 2)
+        val before = mutablePreferencesOf().apply { put(config); markRedraw(1L) }
+        val after = before.toMutablePreferences().apply { markRedraw(2L) }
+        assertNotEquals(before, after)
+        assertEquals(config, after.toWidgetConfig())
     }
 }

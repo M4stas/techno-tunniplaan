@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import io.github.m4stas.technotunniplaan.App
 import io.github.m4stas.technotunniplaan.R
+import io.github.m4stas.technotunniplaan.schedule.Schedule
 import io.github.m4stas.technotunniplaan.store.Settings
 import io.github.m4stas.technotunniplaan.ui.browse.*
 import io.github.m4stas.technotunniplaan.ui.theme.*
@@ -47,17 +48,18 @@ class WidgetConfigActivity : AppCompatActivity() {
             setContent {
                 val settings by container.settings.settings.collectAsState(initial = Settings())
                 val state by browse.state.collectAsState()
+                val weeks by container.repository.weeks.collectAsState()
                 var config by rememberSaveableConfig(initial)
                 var saving by remember { mutableStateOf(false) }
                 AppTheme(settings.theme) {
                     val p = LocalPalette.current
                     Surface(color = p.background) {
-                        Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(stringResource(R.string.widget_name), color = p.text, style = MaterialTheme.typography.titleLarge)
                             FilterChip(selected = config.entity == null, onClick = { config = config.copy(entity = null) },
                                 label = { Text(stringResource(R.string.settings_home)) },
                                 colors = FilterChipDefaults.filterChipColors(containerColor = p.surface, labelColor = p.text, selectedContainerColor = p.highlight, selectedLabelColor = p.accent))
-                            config.entity?.let { Text(it.key, color = p.text) }
+                            config.entity?.let { ref -> Text(Schedule(weeks ?: emptyList()).find(ref)?.name ?: ref.key, color = p.text) }
                             Text(stringResource(R.string.widget_count), color = p.textSecondary)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 (1..5).forEach { count ->

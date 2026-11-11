@@ -27,11 +27,14 @@ import java.time.format.TextStyle as DayTextStyle
 private val kindKey = stringPreferencesKey("entity_kind")
 private val entityKey = stringPreferencesKey("entity_key")
 private val countKey = intPreferencesKey("count")
+private val redrawKey = longPreferencesKey("redraw_at")
 fun Preferences.toWidgetConfig(): WidgetConfig {
     val kind = EntityKind.entries.find { it.name == this[kindKey] }
     val key = this[entityKey]?.takeIf { it.isNotBlank() }
     return WidgetConfig(if (kind != null && key != null) EntityRef(kind, key) else null, (this[countKey] ?: 1).coerceIn(1, 5))
 }
+/** A running Glance session recomposes only when its state changes, so every scheduled redraw stores a new value here. */
+fun MutablePreferences.markRedraw(at: Long) { this[redrawKey] = at }
 fun MutablePreferences.put(config: WidgetConfig) {
     this[countKey] = config.count.coerceIn(1, 5)
     val entity = config.entity

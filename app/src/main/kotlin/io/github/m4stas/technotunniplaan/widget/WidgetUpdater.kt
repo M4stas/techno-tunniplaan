@@ -7,6 +7,7 @@ import android.content.Intent
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.updateAll
 import androidx.glance.appwidget.state.getAppWidgetState
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import io.github.m4stas.technotunniplaan.App
 import io.github.m4stas.technotunniplaan.schedule.*
@@ -19,13 +20,15 @@ import java.time.LocalDateTime
 object WidgetUpdater {
     private val mutex = Mutex()
     suspend fun refresh(context: Context) = mutex.withLock {
-        NextLessonsWidget().updateAll(context)
         val container = (context.applicationContext as App).container
+        val ids = GlanceAppWidgetManager(context).getGlanceIds(NextLessonsWidget::class.java)
+        ids.forEach { id -> updateAppWidgetState(context, id) { it.markRedraw(container.clock.millis()) } }
+        NextLessonsWidget().updateAll(context)
         container.repository.ensureLoaded()
         val settings = container.settings.settings.first()
         val schedule = Schedule(container.repository.weeks.value ?: emptyList(), settings.subGroupFilter())
         val now = LocalDateTime.now(container.clock)
-        val next = GlanceAppWidgetManager(context).getGlanceIds(NextLessonsWidget::class.java).mapNotNull { id ->
+        val next = ids.mapNotNull { id ->
             val config = getAppWidgetState(context, PreferencesGlanceStateDefinition, id).toWidgetConfig()
             config.resolve(settings)?.let { nextRedrawAt(schedule.nextLessons(it, now, config.count), now) }
         }.minOrNull()
