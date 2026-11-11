@@ -28,7 +28,10 @@ class OnboardingViewModel(private val sync: SyncEngine, private val repository: 
         viewModelScope.launch {
             try {
                 // AppRoot starts a stale check too, so the first load only downloads when that one has not.
-                if (repository.ensureLoaded().isEmpty()) { if (force) sync.sync() else sync.syncIfStale() }
+                // A fresh sync that left the cache empty does not count, so an empty cache still downloads.
+                if (repository.ensureLoaded().isEmpty()) {
+                    if (force || (sync.syncIfStale() == null && repository.weeks.value.orEmpty().isEmpty())) sync.sync()
+                }
             } catch (e: IOException) {
                 // The cache or the settings could not be written. Offline lets the user retry.
             }
@@ -47,6 +50,13 @@ class OnboardingViewModel(private val sync: SyncEngine, private val repository: 
         val pick = state.value as? OnboardingState.Pick ?: return
         if (entity !in pick.results) return
         val ref = EntityRef(if (pick.role == Role.STUDENT) EntityKind.CLASS else EntityKind.TEACHER, entity.key)
-        viewModelScope.launch { settings.update { it.withHome(ref) }; mutablePicked.value = ref }
+        viewModelScope.launch {
+            try {
+                settings.update { it.withHome(ref) }
+                mutablePicked.value = ref
+            } catch (e: IOException) {
+                // The home could not be saved. The list stays on screen so the user can pick again.
+            }
+        }
     }
 }

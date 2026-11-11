@@ -1,6 +1,8 @@
 package io.github.m4stas.technotunniplaan.ui.onboarding
 
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
 import io.github.m4stas.technotunniplaan.*
 import io.github.m4stas.technotunniplaan.edupage.EduPageDecoder
 import io.github.m4stas.technotunniplaan.schedule.*
@@ -88,6 +90,54 @@ class OnboardingViewModelTest {
             appSync.await()
             assertEquals(listOf("22"), api.requested)
         } finally { Dispatchers.resetMain() }
+    }
+
+    @Test fun failedHomeWriteStaysOnTheList() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+            val repository = TimetableRepository(TimetableCache(File(tmp.root, "cache")), StandardTestDispatcher(testScheduler))
+            val store = FailingWrites(PreferenceDataStoreFactory.create(scope = backgroundScope) { File(tmp.root, "settings.preferences_pb") })
+            val settings = SettingsStore(store)
+            val api = FakeApi(EduPageDecoder.decodeViewer(Fixtures.text("viewer.json")), mutableMapOf("22" to Fixtures.raw()))
+            val sync = SyncEngine(api, repository, settings, Clock.fixed(Instant.parse("2026-11-10T08:00:00Z"), SCHOOL_ZONE))
+            val vm = OnboardingViewModel(sync, repository, settings)
+            assertEquals(OnboardingState.ChooseRole, vm.settled())
+            vm.chooseRole(Role.TEACHER)
+            val list = vm.state.value
+            store.failing = true
+            vm.pick(Entity("mari näidis", "Mari Näidis", "MN"))
+            store.attempted.await()
+            advanceUntilIdle()
+            assertNull(vm.picked.value)
+            assertEquals(list, vm.state.value)
+            assertNull(settings.settings.first().home)
+        } finally { Dispatchers.resetMain() }
+    }
+
+    @Test fun emptyCacheDownloadsEvenAfterARecentSync() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+            val now = Instant.parse("2026-11-10T08:00:00Z")
+            val repository = TimetableRepository(TimetableCache(File(tmp.root, "cache")), StandardTestDispatcher(testScheduler))
+            val settings = SettingsStore(PreferenceDataStoreFactory.create(scope = backgroundScope) { File(tmp.root, "settings.preferences_pb") })
+            settings.update { it.copy(lastSyncMillis = now.toEpochMilli() - 60_000) }
+            val api = FakeApi(EduPageDecoder.decodeViewer(Fixtures.text("viewer.json")), mutableMapOf("22" to Fixtures.raw()))
+            val sync = SyncEngine(api, repository, settings, Clock.fixed(now, SCHOOL_ZONE))
+            val vm = OnboardingViewModel(sync, repository, settings)
+            assertEquals(OnboardingState.ChooseRole, vm.settled())
+            assertEquals(listOf("22"), api.requested)
+        } finally { Dispatchers.resetMain() }
+    }
+
+    /** Reads pass through. Once [failing] is set, every write throws IOException, as on a full disk. */
+    private class FailingWrites(private val delegate: DataStore<Preferences>) : DataStore<Preferences> {
+        @Volatile var failing = false
+        val attempted = CompletableDeferred<Unit>()
+        override val data = delegate.data
+        override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
+            if (failing) { attempted.complete(Unit); throw IOException("disk full") }
+            return delegate.updateData(transform)
+        }
     }
 
     private suspend fun OnboardingViewModel.settled() = state.first { it != OnboardingState.Loading }

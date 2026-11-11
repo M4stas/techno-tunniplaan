@@ -16,21 +16,35 @@ class MainActivity : AppCompatActivity() {
     private var openEntity by mutableStateOf<EntityRef?>(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // A recreated activity gets the launch intent again. Opening its entity twice would undo the user's navigation.
-        if (savedInstanceState == null) openEntity = parse(intent)
+        openEntity = initialRequest(savedInstanceState, intent)
         setContent { AppRoot((application as App).container, openEntity) { openEntity = null } }
+    }
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        savePending(outState, openEntity)
     }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         openEntity = parse(intent)
     }
-    private fun parse(intent: Intent): EntityRef? {
-        val kind = intent.getStringExtra("kind")?.let { value -> EntityKind.entries.find { it.name == value } } ?: return null
-        val key = intent.getStringExtra("key")?.takeIf { it.isNotBlank() } ?: return null
-        return EntityRef(kind, key)
-    }
     companion object {
+        private const val PENDING_KIND = "pendingKind"
+        private const val PENDING_KEY = "pendingKey"
+        /**
+         * A fresh start opens the intent's entity. A recreated activity gets the launch intent again, and opening it
+         * twice would undo the user's navigation, so it reopens only a request the shell had not opened yet.
+         */
+        internal fun initialRequest(savedInstanceState: Bundle?, intent: Intent): EntityRef? =
+            if (savedInstanceState == null) parse(intent) else ref(savedInstanceState.getString(PENDING_KIND), savedInstanceState.getString(PENDING_KEY))
+        internal fun savePending(outState: Bundle, pending: EntityRef?) {
+            if (pending != null) { outState.putString(PENDING_KIND, pending.kind.name); outState.putString(PENDING_KEY, pending.key) }
+        }
+        internal fun parse(intent: Intent): EntityRef? = ref(intent.getStringExtra("kind"), intent.getStringExtra("key"))
+        private fun ref(kindName: String?, key: String?): EntityRef? {
+            val kind = kindName?.let { value -> EntityKind.entries.find { it.name == value } } ?: return null
+            return EntityRef(kind, key?.takeIf { it.isNotBlank() } ?: return null)
+        }
         fun intentFor(context: Context, entity: EntityRef?): Intent = Intent(context, MainActivity::class.java).apply {
             if (entity != null) { putExtra("kind", entity.kind.name); putExtra("key", entity.key) }
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
