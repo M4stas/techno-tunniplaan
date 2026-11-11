@@ -55,25 +55,28 @@ class NextLessonsWidget : GlanceAppWidget() {
             val entity = config.resolve(settings)
             val colors = widgetColors(settings.theme)
             val widthDp = LocalSize.current.width.value.toInt()
-            val rowHeight = widgetRowHeight(widthDp)
+            val heightDp = LocalSize.current.height.value.toInt()
+            val rowHeight = widgetRowHeight(widthDp, heightDp)
             val content = widgetContent(weeks?.let { Schedule(it, settings.subGroupFilter()) }, entity,
-                LocalDateTime.now(container.clock), minOf(config.count, rowsThatFit(LocalSize.current.height.value.toInt(), widthDp)))
+                LocalDateTime.now(container.clock), minOf(config.count, rowsThatFit(heightDp, widthDp)))
             Column(GlanceModifier.fillMaxSize().background(colors.background).cornerRadius(24.dp)
-                .clickable(actionStartActivity(MainActivity.intentFor(context, entity))).padding(8.dp)) {
+                .clickable(actionStartActivity(MainActivity.intentFor(context, entity)))
+                .padding(horizontal = 8.dp, vertical = widgetVerticalPadding(heightDp).dp)) {
                 when (content) {
                     WidgetContent.NoData -> Text(context.getString(R.string.widget_open_app), style = TextStyle(color = colors.text))
                     WidgetContent.NoLessons -> Text(context.getString(R.string.widget_no_lessons), style = TextStyle(color = colors.text))
                     is WidgetContent.Lessons -> content.rows.forEach { row ->
                         val time = listOfNotNull(row.day?.getDisplayName(DayTextStyle.SHORT, context.resources.configuration.locales[0]), row.text.time).joinToString(" ")
-                        if (rowHeight == 80) {
+                        if (widthDp < 240) {
                             Column(GlanceModifier.fillMaxWidth().height(rowHeight.dp)) {
-                                Text(time, style = TextStyle(color = colors.accent, fontSize = 14.sp, fontWeight = FontWeight.Bold), maxLines = 2)
-                                LessonDetails(row, colors)
+                                Text(time, style = TextStyle(color = colors.accent, fontSize = 14.sp, fontWeight = FontWeight.Bold), maxLines = if (rowHeight == 80) 2 else 1)
+                                if (rowHeight == 80) LessonDetails(row, colors)
+                                else Text(row.text.title, style = TextStyle(color = colors.text, fontWeight = FontWeight.Bold), maxLines = 1)
                             }
                         } else {
                             Row(GlanceModifier.fillMaxWidth().height(rowHeight.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Text(time,
-                                    modifier = GlanceModifier.width(116.dp), style = androidx.glance.text.TextStyle(color = colors.accent, fontSize = 18.sp, fontWeight = FontWeight.Bold), maxLines = 2)
+                                    modifier = GlanceModifier.width(116.dp), style = androidx.glance.text.TextStyle(color = colors.accent, fontSize = 18.sp, fontWeight = FontWeight.Bold), maxLines = if (rowHeight < 44) 1 else 2)
                                 Column(GlanceModifier.defaultWeight()) {
                                     LessonDetails(row, colors)
                                 }

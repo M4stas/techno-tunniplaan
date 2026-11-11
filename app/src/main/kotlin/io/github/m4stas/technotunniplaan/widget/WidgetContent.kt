@@ -30,11 +30,15 @@ fun widgetContent(schedule: Schedule?, entity: EntityRef?, now: LocalDateTime, c
 }
 
 fun nextRedrawAt(upcoming: List<DatedLesson>, now: LocalDateTime): LocalDateTime? {
-    val end = upcoming.firstOrNull()?.endsAt ?: return null
+    val end = upcoming.minOfOrNull { it.endsAt } ?: return null
     val midnight = now.toLocalDate().plusDays(1).atStartOfDay()
     return if (upcoming.any { it.date > now.toLocalDate() } && midnight < end) midnight else end
 }
 
-fun widgetRowHeight(widthDp: Int): Int = if (widthDp < 240) 80 else 44
+fun widgetRowHeight(widthDp: Int, heightDp: Int): Int =
+    if (widthDp < 240 && heightDp >= 96) 80 else heightDp.coerceIn(1, 44)
 
-fun rowsThatFit(heightDp: Int, widthDp: Int): Int = ((heightDp - 16) / widgetRowHeight(widthDp)).coerceIn(1, 5)
+fun widgetVerticalPadding(heightDp: Int): Int = if (heightDp < 60) 0 else 8
+
+fun rowsThatFit(heightDp: Int, widthDp: Int): Int =
+    ((heightDp - 2 * widgetVerticalPadding(heightDp)) / widgetRowHeight(widthDp, heightDp)).coerceIn(1, 5)
