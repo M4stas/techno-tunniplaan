@@ -24,6 +24,8 @@ android {
         buildConfig = true
     }
     testOptions.unitTests.isIncludeAndroidResources = true
+    // Robolectric's SDK 37 runtime reads jdk.internal.access, which JDK 21 does not export by default.
+    testOptions.unitTests.all { it.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED") }
     buildTypes {
         release {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -56,6 +58,7 @@ dependencies {
     implementation(libs.okhttp)
 
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.androidx.test.core)
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.work.testing)
