@@ -7,6 +7,14 @@
         <service android:name="androidx.appcompat.app.AppLocalesMetadataHolderService" android:enabled="false" android:exported="false">
             <meta-data android:name="autoStoreLocales" android:value="true" />
         </service>
+        <receiver android:name=".widget.NextLessonsReceiver" android:exported="true" android:label="@string/widget_name">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/next_lessons_widget_info" />
+        </receiver>
+        <receiver android:name=".widget.WidgetAlarmReceiver" android:exported="false" />
+        <activity android:name=".widget.WidgetConfigActivity" android:exported="true">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" /></intent-filter>
+        </activity>
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
