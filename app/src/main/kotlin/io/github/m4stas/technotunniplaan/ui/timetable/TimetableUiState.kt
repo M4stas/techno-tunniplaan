@@ -13,7 +13,11 @@ data class TimetableUiState(
 )
 fun timetableUiState(schedule: Schedule, settings: Settings, entity: EntityRef, selected: LocalDate?, now: LocalDateTime, refreshing: Boolean = false): TimetableUiState {
     val dates = schedule.schoolDays()
-    val date = selected?.takeIf { it in dates } ?: schedule.initialDate(now.toLocalDate())
+    val date = selected?.let { requested ->
+        requested.takeIf { it in dates } ?: schedule.weekOf(requested)?.let { destination ->
+            dates.lastOrNull { schedule.weekOf(it)?.monday == destination.monday }
+        }
+    } ?: schedule.initialDate(now.toLocalDate())
     val week = date?.let(schedule::weekOf)
     val found = schedule.find(entity)
     return TimetableUiState(entity, found?.name.orEmpty(), found == null && schedule.weeks.isNotEmpty(), entity == settings.home,

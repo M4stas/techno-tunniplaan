@@ -5,6 +5,24 @@ import io.github.m4stas.technotunniplaan.store.*
 import org.junit.Test
 import org.junit.Assert.*
 class TimetableUiStateTest {
+ @Test fun unavailableSaturdayStaysInDestinationWeek() {
+     val first = Fixtures.week1()
+     val second = Fixtures.week2()
+     val home = Settings(home = Fixtures.CLASS_A)
+     val now = Fixtures.MONDAY.atTime(9, 0)
+     for ((destination, source) in listOf(second to first, first to second)) {
+         val saturdaySource = source.copy(lessons = source.lessons + source.lessons.first().copy(day = 5))
+         val schedule = Schedule(listOf(saturdaySource, destination))
+         val sourceState = timetableUiState(schedule, home, Fixtures.CLASS_A, source.monday.plusDays(5), now)
+         assertEquals(source.monday.plusDays(5), sourceState.selectedDate)
+         val requested = destination.monday.plusDays(5)
+         val result = timetableUiState(schedule, home, Fixtures.CLASS_A, requested, now)
+         assertEquals(destination.monday.plusDays(4), result.selectedDate)
+         assertEquals(destination.title(), result.weekTitle)
+         val weekday = timetableUiState(schedule, home, Fixtures.CLASS_A, destination.monday.plusDays(2), now)
+         assertEquals(destination.monday.plusDays(2), weekday.selectedDate)
+     }
+ }
  @Test fun buildsDayState() {
  val s = Schedule(listOf(Fixtures.week1())); val mon = Fixtures.MONDAY; val home = Settings(home = Fixtures.CLASS_A)
  val st = timetableUiState(s, home, Fixtures.CLASS_A, null, mon.atTime(9,0))
