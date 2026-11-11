@@ -19,6 +19,7 @@ import io.github.m4stas.technotunniplaan.schedule.EntityRef
 import io.github.m4stas.technotunniplaan.store.Settings
 import io.github.m4stas.technotunniplaan.store.ThemeMode
 import io.github.m4stas.technotunniplaan.ui.onboarding.*
+import io.github.m4stas.technotunniplaan.ui.browse.*
 import io.github.m4stas.technotunniplaan.ui.theme.*
 import io.github.m4stas.technotunniplaan.ui.timetable.*
 import io.github.m4stas.technotunniplaan.schedule.EntityKind
@@ -55,7 +56,14 @@ object Routes {
         Surface(Modifier.fillMaxSize(), color = LocalPalette.current.background) {
             val loaded = settings
             if (loaded != null && weeks != null) {
-                AppShell(loaded.home, openEntity, onOpened, timetable = { entity, nav ->
+                AppShell(loaded.home, openEntity, onOpened, browse = { nav ->
+                    val vm: BrowseViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T = BrowseViewModel(container.repository, container.settings) as T
+                    })
+                    val state by vm.state.collectAsStateWithLifecycle()
+                    BrowseScreen(state, vm::setTab, vm::setQuery) { nav.navigate(Routes.entity(it)) }
+                }, timetable = { entity, nav ->
                     val vm: TimetableViewModel = viewModel(factory = object : ViewModelProvider.Factory {
                         @Suppress("UNCHECKED_CAST")
                         override fun <T : ViewModel> create(modelClass: Class<T>): T = TimetableViewModel(entity, container.repository, container.settings, container.sync, container.clock) as T
@@ -94,6 +102,7 @@ object Routes {
     home: EntityRef?, openEntity: EntityRef?, onOpened: () -> Unit,
     nav: NavHostController = rememberNavController(),
     timetable: @Composable (EntityRef?, NavHostController) -> Unit = { _, _ -> Text(stringResource(R.string.nav_timetable), Modifier.padding(24.dp), color = LocalPalette.current.text) },
+    browse: @Composable (NavHostController) -> Unit = { Text(stringResource(R.string.nav_browse), Modifier.padding(24.dp), color = LocalPalette.current.text) },
     onboarding: @Composable (NavHostController) -> Unit,
 ) {
     val p = LocalPalette.current
@@ -110,7 +119,7 @@ object Routes {
         NavHost(nav, startDestination = start, modifier = Modifier.weight(1f)) {
             composable(Routes.ONBOARDING) { onboarding(nav) }
             composable(Routes.HOME) { timetable(null, nav) }
-            composable(Routes.BROWSE) { Text(stringResource(R.string.nav_browse), Modifier.padding(24.dp), color = p.text) }
+            composable(Routes.BROWSE) { browse(nav) }
             composable(Routes.SETTINGS) { Text(stringResource(R.string.nav_settings), Modifier.padding(24.dp), color = p.text) }
             composable("entity/{kind}/{key}") { entry ->
                 val kind = entry.arguments?.getString("kind")?.let(EntityKind::valueOf)
