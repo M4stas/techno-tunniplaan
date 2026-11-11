@@ -32,6 +32,8 @@ Create a `release/*` branch from the validated `dev` commit, then run no-mistake
 
 CI runs on pull requests into either branch and on pushes after merges. The required `build-test` job runs Android lint, JVM unit tests and a debug APK build with JDK 21. A failed step blocks the merge.
 
+For this branch-protection change, the no-mistakes run skips local test and lint phases. Local validation is static inspection only. The required GitHub CI job provides the executable checks in its disposable runner; wait for its result before claiming build validation. This change does not alter Android app behavior and requires no emulator checks.
+
 Passing CI does not verify every device interaction. Before promoting app behavior changes, complete the applicable emulator checks in `docs/agent-policy.md`. Keep screenshots and real timetable data out of the repository.
 
 After a release, synchronize `main` back into `dev` through a pull request if the release introduced fixes that are missing from `dev`.
