@@ -65,5 +65,7 @@ dependencies {
     testImplementation(libs.coroutines.test)
     testImplementation(libs.mockwebserver3)
     testImplementation(libs.compose.ui.test.junit4)
+    // Compose test pulls Espresso 3.5.0, which calls InputManager.getInstance(), gone on SDK 37.
+    testImplementation(libs.espresso.core)
     debugImplementation(libs.compose.ui.test.manifest)
 }
