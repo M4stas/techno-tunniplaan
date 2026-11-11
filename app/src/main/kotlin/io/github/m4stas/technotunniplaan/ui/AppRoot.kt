@@ -29,6 +29,13 @@ import androidx.lifecycle.repeatOnLifecycle
 import java.io.IOException
 import java.net.URLEncoder
 
+import android.app.Activity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import androidx.core.view.WindowCompat
+import androidx.compose.ui.platform.LocalView
+import io.github.m4stas.technotunniplaan.ui.settings.*
+
 object Routes {
     const val ONBOARDING = "onboarding"
     const val HOME = "home"
@@ -40,6 +47,12 @@ object Routes {
 /** [onOpened] tells the activity that [openEntity] is on screen, so the same entity can be asked for again. */
 @Composable fun AppRoot(container: AppContainer, openEntity: EntityRef?, onOpened: () -> Unit) {
     val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = null)
+    LaunchedEffect(settings?.theme) {
+        settings?.theme?.let { theme ->
+            val mode = nightMode(theme)
+            if (AppCompatDelegate.getDefaultNightMode() != mode) AppCompatDelegate.setDefaultNightMode(mode)
+        }
+    }
     val weeks by container.repository.weeks.collectAsStateWithLifecycle()
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(container, lifecycle) {
@@ -53,6 +66,16 @@ object Routes {
         }
     }
     AppTheme(settings?.theme ?: ThemeMode.SYSTEM) {
+        val view = LocalView.current
+        val light = LocalPalette.current != DarkPalette
+        SideEffect {
+            (view.context as? Activity)?.window?.let { window ->
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = light
+                    isAppearanceLightNavigationBars = light
+                }
+            }
+        }
         Surface(Modifier.fillMaxSize(), color = LocalPalette.current.background) {
             val loaded = settings
             if (loaded != null && weeks != null) {
@@ -63,6 +86,16 @@ object Routes {
                     })
                     val state by vm.state.collectAsStateWithLifecycle()
                     BrowseScreen(state, vm::setTab, vm::setQuery) { nav.navigate(Routes.entity(it)) }
+                }, settings = { nav ->
+                    val vm: SettingsViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T = SettingsViewModel(container.repository, container.settings, container.sync) as T
+                    })
+                    val state by vm.state.collectAsStateWithLifecycle()
+                    val locales = AppCompatDelegate.getApplicationLocales()
+                    SettingsScreen(state, { nav.navigate(Routes.ONBOARDING) }, vm::chooseGroup, vm::setTheme,
+                        { tag -> AppCompatDelegate.setApplicationLocales(if (tag == null) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(tag)) },
+                        vm::syncNow, if (locales.isEmpty) null else locales[0]?.language)
                 }, timetable = { entity, nav ->
                     val vm: TimetableViewModel = viewModel(factory = object : ViewModelProvider.Factory {
                         @Suppress("UNCHECKED_CAST")
@@ -103,6 +136,7 @@ object Routes {
     nav: NavHostController = rememberNavController(),
     timetable: @Composable (EntityRef?, NavHostController) -> Unit = { _, _ -> Text(stringResource(R.string.nav_timetable), Modifier.padding(24.dp), color = LocalPalette.current.text) },
     browse: @Composable (NavHostController) -> Unit = { Text(stringResource(R.string.nav_browse), Modifier.padding(24.dp), color = LocalPalette.current.text) },
+    settings: @Composable (NavHostController) -> Unit = { Text(stringResource(R.string.nav_settings), Modifier.padding(24.dp), color = LocalPalette.current.text) },
     onboarding: @Composable (NavHostController) -> Unit,
 ) {
     val p = LocalPalette.current
@@ -120,7 +154,7 @@ object Routes {
             composable(Routes.ONBOARDING) { onboarding(nav) }
             composable(Routes.HOME) { timetable(null, nav) }
             composable(Routes.BROWSE) { browse(nav) }
-            composable(Routes.SETTINGS) { Text(stringResource(R.string.nav_settings), Modifier.padding(24.dp), color = p.text) }
+            composable(Routes.SETTINGS) { settings(nav) }
             composable("entity/{kind}/{key}") { entry ->
                 val kind = entry.arguments?.getString("kind")?.let(EntityKind::valueOf)
                 val key = entry.arguments?.getString("key")
