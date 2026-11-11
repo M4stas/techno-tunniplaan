@@ -20,6 +20,11 @@ import io.github.m4stas.technotunniplaan.store.Settings
 import io.github.m4stas.technotunniplaan.store.ThemeMode
 import io.github.m4stas.technotunniplaan.ui.onboarding.*
 import io.github.m4stas.technotunniplaan.ui.theme.*
+import io.github.m4stas.technotunniplaan.ui.timetable.*
+import io.github.m4stas.technotunniplaan.schedule.EntityKind
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import java.io.IOException
 import java.net.URLEncoder
 
@@ -33,21 +38,34 @@ object Routes {
 
 /** [onOpened] tells the activity that [openEntity] is on screen, so the same entity can be asked for again. */
 @Composable fun AppRoot(container: AppContainer, openEntity: EntityRef?, onOpened: () -> Unit) {
-    val settings by produceState<Settings?>(null, container) { container.settings.settings.collect { value = it } }
+    val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = null)
     val weeks by container.repository.weeks.collectAsStateWithLifecycle()
-    LaunchedEffect(container) {
-        try {
-            container.repository.ensureLoaded()
-            container.sync.syncIfStale()
-        } catch (e: IOException) {
-            // The cache or the settings could not be written. The screens keep showing what is loaded.
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(container, lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            try {
+                container.repository.ensureLoaded()
+                container.sync.syncIfStale()
+            } catch (_: IOException) {
+                // Keep the loaded data when storage is unavailable.
+            }
         }
     }
     AppTheme(settings?.theme ?: ThemeMode.SYSTEM) {
         Surface(Modifier.fillMaxSize(), color = LocalPalette.current.background) {
             val loaded = settings
             if (loaded != null && weeks != null) {
-                AppShell(loaded.home, openEntity, onOpened) { nav ->
+                AppShell(loaded.home, openEntity, onOpened, timetable = { entity, nav ->
+                    val vm: TimetableViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T = TimetableViewModel(entity, container.repository, container.settings, container.sync, container.clock) as T
+                    })
+                    val state by vm.state.collectAsStateWithLifecycle()
+                    val back: (() -> Unit)? = if (entity == null) null else { { nav.popBackStack() } }
+                    state?.let { TimetableScreen(it, vm::selectDate, vm::setViewMode, vm::refresh, vm::toggleFavourite,
+                        { ref -> nav.navigate(Routes.entity(ref)) }, { nav.navigate(Routes.ONBOARDING) },
+                        back) }
+                }) { nav ->
                     val initialHome = remember { loaded.home }
                     val vm: OnboardingViewModel = viewModel(factory = object : ViewModelProvider.Factory {
                         @Suppress("UNCHECKED_CAST")
@@ -74,7 +92,9 @@ object Routes {
  */
 @Composable fun AppShell(
     home: EntityRef?, openEntity: EntityRef?, onOpened: () -> Unit,
-    nav: NavHostController = rememberNavController(), onboarding: @Composable (NavHostController) -> Unit,
+    nav: NavHostController = rememberNavController(),
+    timetable: @Composable (EntityRef?, NavHostController) -> Unit = { _, _ -> Text(stringResource(R.string.nav_timetable), Modifier.padding(24.dp), color = LocalPalette.current.text) },
+    onboarding: @Composable (NavHostController) -> Unit,
 ) {
     val p = LocalPalette.current
     val start = remember { if (home == null) Routes.ONBOARDING else Routes.HOME }
@@ -89,10 +109,14 @@ object Routes {
     Column(Modifier.safeDrawingPadding()) {
         NavHost(nav, startDestination = start, modifier = Modifier.weight(1f)) {
             composable(Routes.ONBOARDING) { onboarding(nav) }
-            composable(Routes.HOME) { Text(stringResource(R.string.nav_timetable), Modifier.padding(24.dp), color = p.text) }
+            composable(Routes.HOME) { timetable(null, nav) }
             composable(Routes.BROWSE) { Text(stringResource(R.string.nav_browse), Modifier.padding(24.dp), color = p.text) }
             composable(Routes.SETTINGS) { Text(stringResource(R.string.nav_settings), Modifier.padding(24.dp), color = p.text) }
-            composable("entity/{kind}/{key}") { Text(stringResource(R.string.nav_timetable), Modifier.padding(24.dp), color = p.text) }
+            composable("entity/{kind}/{key}") { entry ->
+                val kind = entry.arguments?.getString("kind")?.let(EntityKind::valueOf)
+                val key = entry.arguments?.getString("key")
+                if (kind != null && key != null) timetable(EntityRef(kind, key), nav)
+            }
         }
         if (entry?.destination?.route != Routes.ONBOARDING) {
             Surface(Modifier.padding(16.dp).fillMaxWidth(), shape = RoundedCornerShape(32.dp), color = p.surface) {

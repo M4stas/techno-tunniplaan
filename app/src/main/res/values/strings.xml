@@ -43,4 +43,7 @@
     <string name="save">Save</string>
     <string name="language_et">Eesti</string>
     <string name="language_en">English</string>
+    <string name="timetable_back">Back</string>
+    <string name="timetable_previous">Previous week</string>
+    <string name="timetable_next">Next week</string>
 </resources>

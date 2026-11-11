@@ -19,6 +19,7 @@ androidx-test-core = "1.7.0"
 espresso = "3.7.0"
 
 [libraries]
+compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
 espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }

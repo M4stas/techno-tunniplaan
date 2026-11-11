@@ -43,4 +43,7 @@
     <string name="save">Salvesta</string>
     <string name="language_et">Eesti</string>
     <string name="language_en">English</string>
+    <string name="timetable_back">Tagasi</string>
+    <string name="timetable_previous">Eelmine nädal</string>
+    <string name="timetable_next">Järgmine nädal</string>
 </resources>
