@@ -35,4 +35,6 @@ fun nextRedrawAt(upcoming: List<DatedLesson>, now: LocalDateTime): LocalDateTime
     return if (upcoming.any { it.date > now.toLocalDate() } && midnight < end) midnight else end
 }
 
-fun rowsThatFit(heightDp: Int): Int = ((heightDp - 16) / 44).coerceIn(1, 5)
+fun widgetRowHeight(widthDp: Int): Int = if (widthDp < 240) 80 else 44
+
+fun rowsThatFit(heightDp: Int, widthDp: Int): Int = ((heightDp - 16) / widgetRowHeight(widthDp)).coerceIn(1, 5)

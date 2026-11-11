@@ -39,8 +39,19 @@ class WidgetContentTest {
     }
 
     @Test fun fitsRowsAndResolvesEntity() {
-        assertEquals(listOf(1, 2, 3, 5, 5), listOf(40, 110, 180, 250, 1000).map(::rowsThatFit))
+        assertEquals(listOf(1, 2, 3, 5, 5), listOf(96, 110, 180, 250, 1000).map { rowsThatFit(it, 300) })
         assertEquals(CLASS_A, WidgetConfig().resolve(Settings(home = CLASS_A)))
         assertEquals(MARI, WidgetConfig(MARI).resolve(Settings(home = CLASS_A)))
+    }
+
+    @Test fun countsTallerRowsAtNarrowWidths() {
+        for (width in listOf(110, 160, 239)) {
+            assertEquals(80, widgetRowHeight(width))
+            assertEquals(listOf(1, 1, 2, 4, 5), listOf(96, 175, 176, 415, 416).map { rowsThatFit(it, width) })
+        }
+        for (width in listOf(240, 300, 600)) {
+            assertEquals(44, widgetRowHeight(width))
+            assertEquals(listOf(1, 1, 2, 4, 5), listOf(60, 103, 104, 235, 236).map { rowsThatFit(it, width) })
+        }
     }
 }
