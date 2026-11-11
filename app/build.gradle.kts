@@ -24,6 +24,8 @@ android {
         buildConfig = true
     }
     testOptions.unitTests.isIncludeAndroidResources = true
+    // Robolectric's SDK 37 runtime reads jdk.internal.access, which JDK 21 does not export by default.
+    testOptions.unitTests.all { it.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED") }
     buildTypes {
         release {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -41,6 +43,7 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons.core)
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
     implementation(libs.work.runtime)
@@ -56,11 +59,14 @@ dependencies {
     implementation(libs.okhttp)
 
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.androidx.test.core)
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.work.testing)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.mockwebserver3)
     testImplementation(libs.compose.ui.test.junit4)
+    // Compose test pulls Espresso 3.5.0, which calls InputManager.getInstance(), gone on SDK 37.
+    testImplementation(libs.espresso.core)
     debugImplementation(libs.compose.ui.test.manifest)
 }

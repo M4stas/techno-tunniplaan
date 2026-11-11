@@ -36,6 +36,20 @@ class TimetableCacheTest {
         assertTrue(TimetableCache(File(dir, "missing")).readAll().isEmpty())
     }
 
+    @Test fun writeFailureIsAnIOException() {
+        val notADirectory = tmp.newFile()
+        assertThrows(java.io.IOException::class.java) { TimetableCache(notADirectory).write(Fixtures.week1()) }
+    }
+
+    @Test fun retainOnlyRemovesLeftoverTempFiles() {
+        val dir = tmp.newFolder()
+        val cache = TimetableCache(dir)
+        cache.write(Fixtures.week1())
+        File(dir, "week-123.tmp").writeText("half a week")
+        cache.retainOnly(setOf(Fixtures.MONDAY))
+        assertEquals(setOf("week-2026-11-09.json"), dir.list()!!.toSet())
+    }
+
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     @Test fun repositoryLoadsAndReplaces() = runTest {
         val cache = TimetableCache(tmp.newFolder())
