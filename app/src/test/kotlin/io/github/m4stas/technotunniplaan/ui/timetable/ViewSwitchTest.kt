@@ -3,6 +3,7 @@ package io.github.m4stas.technotunniplaan.ui.timetable
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.unit.dp
 import io.github.m4stas.technotunniplaan.Fixtures
 import io.github.m4stas.technotunniplaan.schedule.*
 import io.github.m4stas.technotunniplaan.store.*
@@ -15,6 +16,30 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class ViewSwitchTest {
     @get:Rule val compose = createComposeRule()
+    @Test fun overlappingLessonsKeepTheirOwnPeriodBounds() {
+        val week = Fixtures.week1()
+        val template = week.lessons.first { it.firstPeriod == 1 && it.lastPeriod == 2 }
+        val spanning = template.copy(subjectShort = "A")
+        val later = template.copy(subjectShort = "B", firstPeriod = 2, start = week.periods.first { it.number == 2 }.start)
+        val earlier = template.copy(subjectShort = "C", lastPeriod = 1, end = week.periods.first { it.number == 1 }.end)
+        val grid = weekGrid(week, mapOf(0 to listOf(spanning, later, earlier)))
+        var clicked: Lesson? = null
+        compose.setContent { AppTheme(ThemeMode.DARK) { WeekView(grid) { clicked = it } } }
+        val a = compose.onNode(hasText("A") and hasClickAction())
+        val b = compose.onNode(hasText("B") and hasClickAction())
+        val c = compose.onNode(hasText("C") and hasClickAction())
+        a.assertHeightIsEqualTo(170.dp)
+        b.assertHeightIsEqualTo(82.dp)
+        c.assertHeightIsEqualTo(82.dp)
+        val boundsA = a.getUnclippedBoundsInRoot()
+        val boundsB = b.getUnclippedBoundsInRoot()
+        val boundsC = c.getUnclippedBoundsInRoot()
+        assertEquals(boundsA.top + 88.dp, boundsB.top)
+        assertEquals(boundsA.top, boundsC.top)
+        assertTrue(boundsC.right <= boundsB.left)
+        b.performClick()
+        assertEquals(later, clicked)
+    }
     @Test fun switchesAndOpensTeacher() {
         var opened: EntityRef? = null
         var selected: ViewMode? = null

@@ -56,6 +56,6 @@ class SyncEngine(
      */
     suspend fun syncIfStale(maxAge: Duration = Duration.ofMinutes(30)): SyncResult? = mutex.withLock {
         val age = settings.settings.first().lastSyncMillis?.let { clock.millis() - it }
-        if (age != null && age >= 0 && age < maxAge.toMillis()) null else download()
+        if (repository.ensureLoaded().isNotEmpty() && age != null && age >= 0 && age < maxAge.toMillis()) null else download()
     }
 }

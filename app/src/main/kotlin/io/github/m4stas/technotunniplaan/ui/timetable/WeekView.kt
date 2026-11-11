@@ -38,13 +38,17 @@ import java.time.format.DateTimeFormatter
                 grid.cells.filter { it.day == day }.forEach { cell ->
                     val start = grid.periods.indexOfFirst { it.number == cell.firstPeriod }
                     val span = grid.periods.count { it.number in cell.firstPeriod..cell.lastPeriod }
-                    Row(Modifier.offset(y = (start * 88).dp).height((span * 88).dp).fillMaxWidth().padding(3.dp)) {
-                        cell.lessons.forEach { lesson -> Surface(onClick = { onLessonClick(lesson) }, modifier = Modifier.weight(1f).fillMaxHeight(), shape = RoundedCornerShape(24.dp), color = p.card) {
-                            Column(Modifier.padding(10.dp)) {
-                                Text(lesson.subjectShort, color = p.text, fontWeight = FontWeight.Bold)
-                                Text(lesson.rooms.joinToString(", ") { it.short }, color = p.textSecondary)
+                    Row(Modifier.offset(y = (start * 88).dp).height((span * 88).dp).fillMaxWidth()) {
+                        cell.lessons.forEach { lesson ->
+                            val lessonStart = grid.periods.indexOfFirst { it.number == lesson.firstPeriod }
+                            val lessonSpan = grid.periods.count { it.number in lesson.firstPeriod..lesson.lastPeriod }
+                            Surface(onClick = { onLessonClick(lesson) }, modifier = Modifier.weight(1f).offset(y = ((lessonStart - start) * 88).dp).height((lessonSpan * 88).dp).padding(3.dp), shape = RoundedCornerShape(24.dp), color = p.card) {
+                                Column(Modifier.padding(10.dp)) {
+                                    Text(lesson.subjectShort, color = p.text, fontWeight = FontWeight.Bold)
+                                    Text(lesson.rooms.joinToString(", ") { it.short }, color = p.textSecondary)
+                                }
                             }
-                        } }
+                        }
                     }
                 }
             }
