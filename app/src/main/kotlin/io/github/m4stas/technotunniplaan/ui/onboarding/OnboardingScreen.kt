@@ -18,7 +18,7 @@ import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
     val p = LocalPalette.current
     BackHandler(state is OnboardingState.Pick, onBack)
     Surface(Modifier.fillMaxSize(), color = p.background) {
-        Column(Modifier.safeDrawingPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
             when (state) {
                 OnboardingState.Loading -> CircularProgressIndicator(color = p.accent)
                 OnboardingState.Offline -> {
