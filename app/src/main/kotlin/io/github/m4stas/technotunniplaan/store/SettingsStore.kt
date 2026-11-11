@@ -3,7 +3,10 @@ package io.github.m4stas.technotunniplaan.store
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import java.io.IOException
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -16,7 +19,8 @@ class SettingsStore(private val dataStore: DataStore<Preferences>) {
     } catch (e: IllegalArgumentException) {
         Settings()
     }
-    val settings = dataStore.data.map { decode(it[key]) }
+    /** An unreadable file reads as the defaults, so the collectors in the UI do not throw. */
+    val settings = dataStore.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }.map { decode(it[key]) }
     suspend fun update(transform: (Settings) -> Settings) {
         dataStore.edit { it[key] = json.encodeToString(transform(decode(it[key]))) }
     }

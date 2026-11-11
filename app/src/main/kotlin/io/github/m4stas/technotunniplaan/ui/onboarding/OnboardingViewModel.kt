@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.m4stas.technotunniplaan.schedule.*
 import io.github.m4stas.technotunniplaan.store.*
 import io.github.m4stas.technotunniplaan.sync.SyncEngine
+import java.io.IOException
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -21,15 +22,20 @@ class OnboardingViewModel(private val sync: SyncEngine, private val repository: 
     private val mutablePicked = MutableStateFlow<EntityRef?>(null)
     /** The home that [pick] stored, set only after the settings write has finished. */
     val picked: StateFlow<EntityRef?> = mutablePicked.asStateFlow()
-    init { load() }
-    private fun load() {
+    init { load(force = false) }
+    private fun load(force: Boolean) {
         mutableState.value = OnboardingState.Loading
         viewModelScope.launch {
-            if (repository.ensureLoaded().isEmpty()) sync.sync()
+            try {
+                // AppRoot starts a stale check too, so the first load only downloads when that one has not.
+                if (repository.ensureLoaded().isEmpty()) { if (force) sync.sync() else sync.syncIfStale() }
+            } catch (e: IOException) {
+                // The cache or the settings could not be written. Offline lets the user retry.
+            }
             mutableState.value = if (repository.weeks.value.orEmpty().isEmpty()) OnboardingState.Offline else OnboardingState.ChooseRole
         }
     }
-    fun retry() { if (state.value != OnboardingState.Loading) load() }
+    fun retry() { if (state.value != OnboardingState.Loading) load(force = true) }
     fun chooseRole(role: Role) { show(role, "") }
     private fun show(role: Role, query: String) {
         val kind = if (role == Role.STUDENT) EntityKind.CLASS else EntityKind.TEACHER

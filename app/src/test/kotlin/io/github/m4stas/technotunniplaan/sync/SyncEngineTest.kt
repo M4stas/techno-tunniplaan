@@ -24,6 +24,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class SyncEngineTest {
     @get:Rule val tmp = TemporaryFolder()
     private val clock = Clock.fixed(Instant.parse("2026-11-10T08:00:00Z"), SCHOOL_ZONE)
@@ -121,6 +122,11 @@ class SyncEngineTest {
         assertNull(s.engine.syncIfStale())
         assertNull(s.api.requestedYear)
         s.settings.update { it.copy(lastSyncMillis = clock.millis() - 31 * 60_000) }
+        assertEquals(SyncResult.Success, s.engine.syncIfStale())
+    }
+    @Test fun lastSyncInTheFutureIsStale() = runTest {
+        val s = Setup(this)
+        s.settings.update { it.copy(lastSyncMillis = clock.millis() + 24 * 60 * 60_000) }
         assertEquals(SyncResult.Success, s.engine.syncIfStale())
     }
     @Test fun concurrentCallsDoNotOverlap() = runTest {

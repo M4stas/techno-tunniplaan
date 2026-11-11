@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.work.Configuration
 import io.github.m4stas.technotunniplaan.sync.SyncScheduler
 import io.github.m4stas.technotunniplaan.sync.SyncWorkerFactory
+import java.io.IOException
 import kotlinx.coroutines.*
 
 class App : Application(), Configuration.Provider {
@@ -16,7 +17,8 @@ class App : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
-        scope.launch { container.repository.ensureLoaded() }
+        // Warm the cache early. AppRoot and the worker load it again if this fails.
+        scope.launch { try { container.repository.ensureLoaded() } catch (e: IOException) { } }
         SyncScheduler.schedule(this)
     }
 }

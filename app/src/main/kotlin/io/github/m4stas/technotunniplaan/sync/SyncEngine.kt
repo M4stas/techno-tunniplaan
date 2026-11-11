@@ -27,20 +27,22 @@ class SyncEngine(
 ) {
     private val mutex = Mutex()
 
-    suspend fun sync(): SyncResult = mutex.withLock {
+    suspend fun sync(): SyncResult = mutex.withLock { download() }
+
+    private suspend fun download(): SyncResult {
         val weeks = try {
             val today = LocalDate.now(clock.withZone(SCHOOL_ZONE))
             selectWeeks(api.publishedTimetables(today.year), today)
                 .map { buildTimetable(api.timetable(it.ttNum), it.monday, it.name) }
         } catch (e: IOException) {
-            return@withLock fail(SyncError.NETWORK)
+            return fail(SyncError.NETWORK)
         } catch (e: EduPageFormatException) {
-            return@withLock fail(SyncError.FORMAT)
+            return fail(SyncError.FORMAT)
         }
         if (weeks.isNotEmpty()) repository.replace(weeks)
         settings.update { it.copy(lastSyncMillis = clock.millis(), lastSyncError = null) }
         onChanged()
-        SyncResult.Success
+        return SyncResult.Success
     }
 
     private suspend fun fail(error: SyncError): SyncResult {
@@ -48,9 +50,12 @@ class SyncEngine(
         return SyncResult.Failed(error)
     }
 
-    suspend fun syncIfStale(maxAge: Duration = Duration.ofMinutes(30)): SyncResult? {
-        val lastSync = settings.settings.first().lastSyncMillis
-        if (lastSync != null && clock.millis() - lastSync < maxAge.toMillis()) return null
-        return sync()
+    /**
+     * Checks the age under the lock, so a caller that waited for another sync sees that sync's result
+     * and does not download again. A last sync in the future (the clock moved back) counts as stale.
+     */
+    suspend fun syncIfStale(maxAge: Duration = Duration.ofMinutes(30)): SyncResult? = mutex.withLock {
+        val age = settings.settings.first().lastSyncMillis?.let { clock.millis() - it }
+        if (age != null && age >= 0 && age < maxAge.toMillis()) null else download()
     }
 }

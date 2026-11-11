@@ -16,8 +16,9 @@ class MainActivity : AppCompatActivity() {
     private var openEntity by mutableStateOf<EntityRef?>(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        openEntity = parse(intent)
-        setContent { AppRoot((application as App).container, openEntity) }
+        // A recreated activity gets the launch intent again. Opening its entity twice would undo the user's navigation.
+        if (savedInstanceState == null) openEntity = parse(intent)
+        setContent { AppRoot((application as App).container, openEntity) { openEntity = null } }
     }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

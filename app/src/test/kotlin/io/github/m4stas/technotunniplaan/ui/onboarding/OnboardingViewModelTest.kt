@@ -10,7 +10,9 @@ import java.io.File
 import java.io.IOException
 import java.time.Clock
 import java.time.Instant
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.*
 import org.junit.*
@@ -47,6 +49,44 @@ class OnboardingViewModelTest {
             assertEquals(OnboardingState.ChooseRole, cached.settled())
             assertNull(api.requestedYear)
             assertTrue(api.requested.isEmpty())
+        } finally { Dispatchers.resetMain() }
+    }
+
+    @Test fun storageFailureShowsOffline() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+            // A file where the cache directory should be makes every cache write fail.
+            File(tmp.root, "cache").writeText("x")
+            val repository = TimetableRepository(TimetableCache(File(tmp.root, "cache")), StandardTestDispatcher(testScheduler))
+            val settings = SettingsStore(PreferenceDataStoreFactory.create(scope = backgroundScope) { File(tmp.root, "settings.preferences_pb") })
+            val api = FakeApi(EduPageDecoder.decodeViewer(Fixtures.text("viewer.json")), mutableMapOf("22" to Fixtures.raw()))
+            val sync = SyncEngine(api, repository, settings, Clock.fixed(Instant.parse("2026-11-10T08:00:00Z"), SCHOOL_ZONE))
+            val vm = OnboardingViewModel(sync, repository, settings)
+            assertEquals(OnboardingState.Offline, vm.settled())
+            vm.retry()
+            assertEquals(OnboardingState.Offline, vm.settled())
+        } finally { Dispatchers.resetMain() }
+    }
+
+    @Test fun firstLaunchDownloadsOnce() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+            val repository = TimetableRepository(TimetableCache(File(tmp.root, "cache")), StandardTestDispatcher(testScheduler))
+            val settings = SettingsStore(PreferenceDataStoreFactory.create(scope = backgroundScope) { File(tmp.root, "settings.preferences_pb") })
+            val api = FakeApi(EduPageDecoder.decodeViewer(Fixtures.text("viewer.json")), mutableMapOf("22" to Fixtures.raw()))
+            val sync = SyncEngine(api, repository, settings, Clock.fixed(Instant.parse("2026-11-10T08:00:00Z"), SCHOOL_ZONE))
+            // AppRoot's stale check is still downloading when the view model starts.
+            val entered = CompletableDeferred<Unit>()
+            val gate = CompletableDeferred<Unit>()
+            api.onList = { entered.complete(Unit); gate.await() }
+            val appSync = async { sync.syncIfStale() }
+            entered.await()
+            val vm = OnboardingViewModel(sync, repository, settings)
+            advanceUntilIdle()
+            gate.complete(Unit)
+            assertEquals(OnboardingState.ChooseRole, vm.settled())
+            appSync.await()
+            assertEquals(listOf("22"), api.requested)
         } finally { Dispatchers.resetMain() }
     }
 
