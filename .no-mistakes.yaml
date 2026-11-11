@@ -1,3 +1,5 @@
+pr:
+  base_branch: dev
 commands:
   prepare: sh scripts/gate-prepare.sh
   test: ./gradlew testDebugUnitTest
