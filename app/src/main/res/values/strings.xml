@@ -44,4 +44,8 @@
     <string name="timetable_back">Back</string>
     <string name="timetable_previous">Previous week</string>
     <string name="timetable_next">Next week</string>
+    <string name="break_short">%1$d min break</string>
+    <string name="break_lunch">%1$d min lunch</string>
+    <string name="break_free">%1$d min free</string>
+    <string name="lesson_in_progress">In progress</string>
 </resources>

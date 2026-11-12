@@ -16,7 +16,7 @@ class ThemeAndRoutesTest {
         assertEquals("entity/TEACHER/mari%20n%C3%A4idis", Routes.entity(Fixtures.MARI))
     }
 
-    private fun Palette.all() = setOf(background, surface, card, cardOutline, currentCard, currentOutline, accentTint, accent, onAccent,
+    private fun Palette.all() = setOf(divider, background, surface, card, cardOutline, currentCard, currentOutline, accentTint, accent, onAccent,
         accentText, accentTextSecondary, text, textSecondary, textMuted, textFaint, ghost, island, onIsland, track, selected, onSelected,
         selectedRow, sheet, outline, error)
 
@@ -30,6 +30,8 @@ class ThemeAndRoutesTest {
     }
 
     @Test fun palettesHoldTheApprovedColours() {
+        assertEquals(Color(0xFF1C1C1C), DarkPalette.divider)
+        assertEquals(Color(0xFFEBEBE7), LightPalette.divider)
         assertEquals(Color(0xFF000000), DarkPalette.background)
         assertEquals(Color(0xFFF4F4F2), DarkPalette.text)
         assertEquals(Color(0xFFD4FF3A), DarkPalette.accent)

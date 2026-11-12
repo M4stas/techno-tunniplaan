@@ -13,15 +13,14 @@ import androidx.compose.ui.res.*
 import androidx.compose.ui.unit.dp
 import io.github.m4stas.technotunniplaan.R
 import io.github.m4stas.technotunniplaan.schedule.EntityRef
-import io.github.m4stas.technotunniplaan.schedule.Lesson
 import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
 import java.time.LocalDate
 
 @Composable fun TimetableScreen(state: TimetableUiState, onSelectDate: (LocalDate) -> Unit, onRefresh: () -> Unit,
     onToggleFavourite: () -> Unit, onOpenEntity: (EntityRef) -> Unit, onPickAgain: () -> Unit, onBack: (() -> Unit)?) {
     val p = LocalPalette.current
-    var openLesson by remember { mutableStateOf<Lesson?>(null) }
-    openLesson?.let { LessonDetailSheet(it, { openLesson = null }, onOpenEntity) }
+    var openSlot by remember { mutableStateOf<SlotUi?>(null) }
+    openSlot?.let { LessonDetailSheet(it.lines.first().lesson, { openSlot = null }, onOpenEntity) }
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (onBack != null) IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.timetable_back), tint = p.text) }
@@ -41,7 +40,7 @@ import java.time.LocalDate
             }
             if (state.weekIsOutdated) Text(stringResource(R.string.week_outdated), Modifier.padding(horizontal = 16.dp), color = p.textSecondary)
             if (state.syncError != null) Text(stringResource(R.string.update_failed), Modifier.testTag("banner-sync-error").padding(16.dp), color = p.error)
-            DayView(state, onSelectDate, onRefresh) { openLesson = it }
+            DayView(state, onSelectDate, onRefresh) { openSlot = it }
         }
     }
 }

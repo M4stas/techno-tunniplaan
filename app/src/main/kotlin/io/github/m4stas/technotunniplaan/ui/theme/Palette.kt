@@ -6,7 +6,7 @@ import io.github.m4stas.technotunniplaan.store.ThemeMode
 
 /** Every colour the app draws. Screens read roles from here and hold no colour literals. */
 data class Palette(
-    val background: Color, val surface: Color, val card: Color, val cardOutline: Color,
+    val divider: Color, val background: Color, val surface: Color, val card: Color, val cardOutline: Color,
     val currentCard: Color, val currentOutline: Color, val accentTint: Color,
     val accent: Color, val onAccent: Color, val accentText: Color, val accentTextSecondary: Color,
     val text: Color, val textSecondary: Color, val textMuted: Color, val textFaint: Color, val ghost: Color,
@@ -15,6 +15,7 @@ data class Palette(
 )
 
 val DarkPalette = Palette(
+    divider = Color(0xFF1C1C1C),
     background = Color(0xFF000000), surface = Color(0xFF121212), card = Color(0xFF0E0E0E), cardOutline = Color(0xFF0E0E0E),
     currentCard = Color(0xFF121212), currentOutline = Color(0xFF262626), accentTint = Color(0x29D4FF3A),
     accent = Color(0xFFD4FF3A), onAccent = Color(0xFF000000), accentText = Color(0xFFD4FF3A), accentTextSecondary = Color(0xFF7F9A1F),
@@ -24,6 +25,7 @@ val DarkPalette = Palette(
 )
 
 val LightPalette = Palette(
+    divider = Color(0xFFEBEBE7),
     background = Color(0xFFF6F6F3), surface = Color(0xFFFFFFFF), card = Color(0xFFFFFFFF), cardOutline = Color(0xFFEBEBE7),
     currentCard = Color(0xFFFFFFFF), currentOutline = Color(0xFFCFE46A), accentTint = Color(0xFFE6FF86),
     accent = Color(0xFFD4FF3A), onAccent = Color(0xFF000000), accentText = Color(0xFF4D6100), accentTextSecondary = Color(0xFF8EA33A),

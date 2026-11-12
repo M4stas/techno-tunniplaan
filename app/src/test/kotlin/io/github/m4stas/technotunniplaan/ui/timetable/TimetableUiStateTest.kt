@@ -29,8 +29,6 @@ class TimetableUiStateTest {
  val st = timetableUiState(s, home, Fixtures.CLASS_A, null, mon.atTime(9,0))
  assertEquals("K-XX-24A", st.title); assertTrue(st.isHome); assertFalse(st.entityMissing)
  assertEquals(mon, st.selectedDate); assertEquals(5, st.days.size)
- assertEquals(listOf(1,2), st.days[0].rows.map { it.size })
- assertEquals("Matemaatika", st.days[0].highlight!!.subject); assertNull(st.days[1].highlight)
  assertEquals("Nädal11 · 9.11–13.11", st.weekTitle); assertFalse(st.weekIsOutdated)
  assertEquals(mon.plusDays(4), timetableUiState(s,home,Fixtures.CLASS_A,null,mon.plusDays(5).atTime(9,0)).selectedDate)
  assertTrue(timetableUiState(s,home,Fixtures.CLASS_A,null,mon.plusDays(8).atTime(9,0)).weekIsOutdated)

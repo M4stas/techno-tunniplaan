@@ -19,7 +19,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun DayView(state: TimetableUiState, onSelectDate: (LocalDate) -> Unit, onRefresh: () -> Unit, onLessonClick: (io.github.m4stas.technotunniplaan.schedule.Lesson) -> Unit = {}) {
+@Composable fun DayView(state: TimetableUiState, onSelectDate: (LocalDate) -> Unit, onRefresh: () -> Unit, onSlotClick: (SlotUi) -> Unit = {}) {
     val p = LocalPalette.current
     if (state.days.isEmpty()) { PullToRefreshBox(state.refreshing, onRefresh, Modifier.fillMaxSize().testTag("day-list")) { Text(stringResource(R.string.no_lessons), color = p.text) }; return }
     val selectedIndex = state.days.indexOfFirst { it.date == state.selectedDate }.coerceAtLeast(0)
@@ -37,9 +37,12 @@ import java.time.format.DateTimeFormatter
         PullToRefreshBox(state.refreshing, onRefresh, Modifier.fillMaxSize()) {
             HorizontalPager(pager, Modifier.fillMaxSize()) { index ->
                 val day = state.days[index]
-                LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 16.dp + Clearance.Nav)) {
-                    if (day.rows.isEmpty()) item { Text(stringResource(R.string.no_lessons), color = p.text) }
-                    items(day.rows.size) { row -> Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { day.rows[row].forEach { lesson -> LessonCard(lesson, state.entity, lesson == day.highlight, Modifier.weight(1f), onLessonClick) } } }
+                LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp + Clearance.Nav)) {
+                    if (day.slots.isEmpty()) item { Text(stringResource(R.string.no_lessons), color = p.text) }
+                    day.slots.forEach { slot ->
+                        slot.breakBefore?.let { pause -> item { BreakLabel(pause) } }
+                        item { TimelineRow(slot, { onSlotClick(slot) }) }
+                    }
                 }
             }
         }

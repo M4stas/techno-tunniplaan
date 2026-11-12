@@ -6,7 +6,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-data class DayUi(val date: LocalDate, val rows: List<List<Lesson>>, val highlight: Lesson?, val slots: List<SlotUi> = emptyList())
+data class DayUi(val date: LocalDate, val slots: List<SlotUi>)
 data class TimetableUiState(
     val entity: EntityRef, val title: String, val entityMissing: Boolean, val isHome: Boolean, val isFavourite: Boolean,
     val days: List<DayUi>, val selectedDate: LocalDate?,
@@ -27,7 +27,7 @@ fun timetableUiState(schedule: Schedule, settings: Settings, entity: EntityRef, 
     return TimetableUiState(entity, found?.name.orEmpty(), found == null && schedule.weeks.isNotEmpty(), entity == settings.home,
         entity in settings.favourites, dates.map { day ->
             val lessons = schedule.lessonsOn(entity, day)
-            DayUi(day, lessons.overlapGroups(), if (day == today) lessons.highlightIndex(now.toLocalTime())?.let(lessons::get) else null,
+            DayUi(day,
                 daySlots(lessons, entity, now.toLocalTime().takeIf { day == today }))
         }, date, week?.title().orEmpty(), week != null && week.monday.plusDays(6) < today,
         settings.lastSyncMillis, settings.lastSyncError, refreshing,
