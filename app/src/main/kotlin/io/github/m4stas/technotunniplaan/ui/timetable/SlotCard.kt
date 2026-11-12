@@ -6,7 +6,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.graphicsLayer
+import io.github.m4stas.technotunniplaan.ui.theme.Motion
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,7 +40,8 @@ private const val SEPARATOR = " · "
 @Composable fun TimelineRow(slot: SlotUi, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val p = LocalPalette.current
     val current = slot.status == SlotStatus.CURRENT
-    Row(modifier.fillMaxWidth().alpha(if (slot.status == SlotStatus.PAST) 0.4f else 1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    val fade by animateFloatAsState(if (slot.status == SlotStatus.PAST) 0.4f else 1f, Motion.medium(), label = "slot-past")
+    Row(modifier.fillMaxWidth().alpha(fade), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.width(46.dp).padding(top = 14.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Text(slot.start.format(HOUR_MINUTE), color = if (current) p.accentText else p.textSecondary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
             Text(slot.end.format(HOUR_MINUTE), color = if (current) p.accentTextSecondary else p.textFaint, fontSize = 12.sp)
@@ -49,11 +59,17 @@ private const val SEPARATOR = " · "
     val title = if (current) p.accentText else p.text
     val sub = if (current) p.textSecondary else p.textMuted
     // The elapsed part of the current lesson is tinted from the left edge.
+    // The tint grows smoothly when the minute ticks over instead of stepping.
+    val elapsed by animateFloatAsState(slot.progress, tween(600), label = "slot-progress")
     val progress = if (current) Modifier.testTag("slot-current")
         .semantics { progressBarRangeInfo = ProgressBarRangeInfo(slot.progress, 0f..1f); stateDescription = inProgress }
-        .drawBehind { drawRect(tint, size = Size(size.width * slot.progress, size.height)) } else Modifier
-    Box(modifier.testTag("slot-card").clip(shape).background(if (current) p.currentCard else p.card)
-        .border(1.dp, if (current) p.currentOutline else p.cardOutline, shape).clickable(onClick = onClick)) {
+        .drawBehind { drawRect(tint, size = Size(size.width * elapsed, size.height)) } else Modifier
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.98f else 1f, Motion.fast(), label = "slot-press")
+    Box(modifier.testTag("slot-card").graphicsLayer { scaleX = scale; scaleY = scale }.clip(shape).background(if (current) p.currentCard else p.card)
+        .border(1.dp, if (current) p.currentOutline else p.cardOutline, shape)
+        .clickable(interaction, LocalIndication.current, onClick = onClick)) {
         Column(Modifier.fillMaxWidth().then(progress).padding(horizontal = 16.dp, vertical = 13.dp),
             verticalArrangement = Arrangement.spacedBy(if (slot.lines.size > 1) 0.dp else 2.dp)) {
             if (slot.lines.size == 1) {

@@ -11,7 +11,7 @@ data class TimetableUiState(
     val entity: EntityRef, val title: String, val entityMissing: Boolean, val isHome: Boolean, val isFavourite: Boolean,
     val days: List<DayUi>, val selectedDate: LocalDate?,
     val weekTitle: String, val weekIsOutdated: Boolean, val lastSyncMillis: Long?, val syncError: SyncError?, val refreshing: Boolean,
-    val nextLesson: NextLessonUi? = null,
+    val nextLesson: NextLessonUi? = null, val today: LocalDate? = null,
 )
 fun timetableUiState(schedule: Schedule, settings: Settings, entity: EntityRef, selected: LocalDate?, now: LocalDateTime, refreshing: Boolean = false): TimetableUiState {
     val dates = schedule.schoolDays()
@@ -31,5 +31,5 @@ fun timetableUiState(schedule: Schedule, settings: Settings, entity: EntityRef, 
                 daySlots(lessons, entity, now.toLocalTime().takeIf { day == today }))
         }, date, week?.title().orEmpty(), week != null && week.monday.plusDays(6) < today,
         settings.lastSyncMillis, settings.lastSyncError, refreshing,
-        next?.let { NextLessonUi(it.date, it.lesson.start, ChronoUnit.DAYS.between(today, it.date).toInt()) })
+        next?.let { NextLessonUi(it.date, it.lesson.start, ChronoUnit.DAYS.between(today, it.date).toInt()) }, today)
 }

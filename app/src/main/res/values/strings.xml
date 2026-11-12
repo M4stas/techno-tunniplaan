@@ -1,10 +1,6 @@
 <resources>
     <string name="app_name">Techno tunniplaan</string>
-    <string name="onboarding_title">Whose timetable?</string>
-    <string name="role_student">I\'m a student</string>
-    <string name="role_teacher">I\'m a teacher</string>
-    <string name="pick_class">Pick your class</string>
-    <string name="pick_teacher">Pick your name</string>
+    <string name="select_timetable">Select timetable</string>
     <string name="search">Search</string>
     <string name="offline_title">Can\'t load the timetable</string>
     <string name="offline_body">Check your internet connection. No saved timetable yet.</string>

@@ -1,5 +1,7 @@
 package io.github.m4stas.technotunniplaan.ui.components
 
+import androidx.compose.animation.*
+import io.github.m4stas.technotunniplaan.ui.theme.Motion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,14 +41,19 @@ object Clearance {
     val p = LocalPalette.current
     Column(modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(title, Modifier.weight(1f).semantics { heading() }, color = p.text, fontSize = 36.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold, letterSpacing = (-1.1).sp)
+            // A new title, such as the next day's name, rises in as the old one fades.
+            AnimatedContent(title, Modifier.weight(1f), label = "header-title", transitionSpec = {
+                (fadeIn(Motion.enter()) + slideInVertically(Motion.enter()) { it / 4 }) togetherWith fadeOut(Motion.fast()) using SizeTransform(clip = false)
+            }) { shown ->
+                Text(shown, Modifier.fillMaxWidth().semantics { heading() }, color = p.text, fontSize = 36.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold, letterSpacing = (-1.1).sp)
+            }
             // The trailing slot takes no height, so a 48dp touch target leaves the header as tall as one without it.
             if (trailing != null) Box(Modifier.layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
                 layout(placeable.width, 0) { placeable.place(0, -placeable.height / 2) }
             }) { trailing() }
         }
-        if (subtitle != null) Text(subtitle, color = p.textMuted, fontSize = 13.sp)
+        if (subtitle != null) Crossfade(subtitle, label = "header-subtitle", animationSpec = Motion.fast()) { Text(it, color = p.textMuted, fontSize = 13.sp) }
     }
 }
 
