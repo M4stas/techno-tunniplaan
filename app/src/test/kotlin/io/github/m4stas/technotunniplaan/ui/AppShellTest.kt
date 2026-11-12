@@ -32,7 +32,7 @@ class AppShellTest {
     }
     private fun route() = compose.runOnIdle { nav.currentBackStackEntry?.destination?.route }
     private fun entityArgs() = compose.runOnIdle { nav.currentBackStackEntry?.arguments?.let { it.getString("kind") to it.getString("key") } }
-    private fun tap(label: String) = compose.onNode(hasText(label) and hasClickAction()).performClick()
+    private fun tap(label: String) = compose.onNode(hasContentDescription(label) and hasClickAction()).performClick()
     private fun back() = compose.runOnIdle { nav.popBackStack() }
 
     @Test fun startsAtOnboardingWithoutHomeAndAtHomeWithOne() {
@@ -40,7 +40,7 @@ class AppShellTest {
         compose.setContent { Shell() }
         assertEquals(Routes.ONBOARDING, route())
         compose.onNodeWithText("onboarding").assertIsDisplayed()
-        compose.onNode(hasText("Browse") and hasClickAction()).assertDoesNotExist()
+        compose.onNode(hasContentDescription("Browse") and hasClickAction()).assertDoesNotExist()
     }
 
     @Test fun launchAtAnotherEntityKeepsHomeUnderneath() {
@@ -154,5 +154,15 @@ class AppShellTest {
         assertEquals(Routes.ONBOARDING, route())
         back()
         assertEquals(Routes.SETTINGS, route())
+    }
+    @Test fun islandMarksTheCurrentTab() {
+        compose.setContent { Shell() }
+        compose.onNodeWithTag("nav-island").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Timetable").assertIsSelected()
+        tap("Browse")
+        compose.onNodeWithContentDescription("Browse").assertIsSelected()
+        compose.onNodeWithContentDescription("Timetable").assertIsNotSelected()
+        compose.runOnIdle { open = Fixtures.MARI }
+        listOf("Timetable", "Browse", "Settings").forEach { compose.onNodeWithContentDescription(it).assertIsNotSelected() }
     }
 }

@@ -1,7 +1,7 @@
 package io.github.m4stas.technotunniplaan.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Alignment
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -127,8 +127,8 @@ object Routes {
 }
 
 /**
- * The navigation graph and the bottom bar. The graph starts at home whenever a home is set, and an
- * entity from a widget opens on top of it, so the bottom bar's `popUpTo(HOME)` always finds home.
+ * The navigation graph and the navigation island. The graph starts at home whenever a home is set, and an
+ * entity from a widget opens on top of it, so the navigation island's `popUpTo(HOME)` always finds home.
  */
 @Composable fun AppShell(
     home: EntityRef?, openEntity: EntityRef?, onOpened: () -> Unit,
@@ -138,7 +138,6 @@ object Routes {
     settings: @Composable (NavHostController) -> Unit = { Text(stringResource(R.string.nav_settings), Modifier.padding(24.dp), color = LocalPalette.current.text) },
     onboarding: @Composable (NavHostController) -> Unit,
 ) {
-    val p = LocalPalette.current
     val start = remember { if (home == null) Routes.ONBOARDING else Routes.HOME }
     val entry by nav.currentBackStackEntryAsState()
     val hasHome = home != null
@@ -151,8 +150,8 @@ object Routes {
             onOpened()
         }
     }
-    Column(Modifier.safeDrawingPadding()) {
-        NavHost(nav, startDestination = start, modifier = Modifier.weight(1f)) {
+    Box(Modifier.fillMaxSize().safeDrawingPadding()) {
+        NavHost(nav, startDestination = start, modifier = Modifier.fillMaxSize()) {
             composable(Routes.ONBOARDING) { onboarding(nav) }
             composable(Routes.HOME) { timetable(null, nav) }
             composable(Routes.BROWSE) { browse(nav) }
@@ -163,14 +162,10 @@ object Routes {
                 if (kind != null && key != null) timetable(EntityRef(kind, key), nav)
             }
         }
-        if (entry?.destination?.route != Routes.ONBOARDING) {
-            Surface(Modifier.padding(16.dp).fillMaxWidth(), shape = RoundedCornerShape(32.dp), color = p.surface) {
-                Row(Modifier.padding(8.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    listOf(Routes.HOME to R.string.nav_timetable, Routes.BROWSE to R.string.nav_browse, Routes.SETTINGS to R.string.nav_settings).forEach { (route, label) ->
-                        TextButton(onClick = { nav.navigate(route) { popUpTo(Routes.HOME); launchSingleTop = true } }) { Text(stringResource(label), color = if (entry?.destination?.route == route) p.accentText else p.textSecondary) }
-                    }
-                }
-            }
+        val route = entry?.destination?.route
+        if (route != Routes.ONBOARDING) {
+            NavIsland(route, { target -> nav.navigate(target) { popUpTo(Routes.HOME); launchSingleTop = true } },
+                Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
         }
     }
 }

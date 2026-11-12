@@ -7,6 +7,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import io.github.m4stas.technotunniplaan.ui.components.Clearance
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -43,6 +44,7 @@ import java.time.format.FormatStyle
         val time = state.lastSyncMillis?.let { DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withLocale(locale).withZone(SCHOOL_ZONE).format(Instant.ofEpochMilli(it)) }
         Text(if (time == null) stringResource(R.string.never_synced) else stringResource(R.string.last_synced, time), color = p.textSecondary)
         Button(onClick = onSyncNow, enabled = !state.syncing, colors = ButtonDefaults.buttonColors(containerColor = p.selected, contentColor = p.onSelected, disabledContainerColor = p.surface, disabledContentColor = p.textSecondary)) { Text(stringResource(R.string.sync_now)) }
+        Spacer(Modifier.height(Clearance.Nav))
     }
 }
 @Composable private fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
