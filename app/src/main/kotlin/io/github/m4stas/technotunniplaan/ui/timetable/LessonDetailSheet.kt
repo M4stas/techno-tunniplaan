@@ -31,7 +31,7 @@ data class DetailRow(val ref: EntityRef, @StringRes val label: Int, val value: S
 fun detailRows(slot: SlotUi, viewer: EntityRef): List<DetailRow> {
     val lessons = slot.lines.map { it.lesson }
     val teachers = lessons.flatMap { lesson ->
-        val rooms = lesson.rooms.joinToString(", ") { it.name }
+        val rooms = lesson.rooms.joinToString(", ") { it.short }
         lesson.teachers.map {
             DetailRow(EntityRef(EntityKind.TEACHER, it.key),
                 if (rooms.isEmpty()) R.string.kind_teacher else R.string.detail_teacher_room,

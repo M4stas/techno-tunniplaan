@@ -11,7 +11,7 @@ class DetailRowsTest {
 
     @Test fun teachersThenRoomsThenClassesWithoutTheViewer() {
         val rows = detailRows(daySlots(monday, Fixtures.CLASS_A, null)[1], Fixtures.CLASS_A)
-        assertEquals(listOf("Jaan Proov · X-102", "Tiit Katse · X-103", "X-102", "X-103"), rows.map { it.value })
+        assertEquals(listOf("Jaan Proov · 102", "Tiit Katse · 103", "X-102", "X-103"), rows.map { it.value })
         assertEquals(listOf(R.string.detail_teacher_room, R.string.detail_teacher_room, R.string.kind_room, R.string.kind_room), rows.map { it.label })
         assertEquals(Fixtures.JAAN, rows[0].ref)
         assertEquals(EntityKind.ROOM, rows[2].ref.kind)

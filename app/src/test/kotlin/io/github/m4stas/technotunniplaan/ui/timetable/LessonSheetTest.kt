@@ -26,7 +26,7 @@ class LessonSheetTest {
         compose.onNodeWithText("08:30 – 10:00").assertExists()
         compose.onNode(hasText("X-101") and hasAnyAncestor(hasTestTag("lesson-details"))).assertExists()
         compose.onNode(hasText("TEACHER · ROOM") and hasAnyAncestor(hasTestTag("lesson-details"))).assertExists()
-        compose.onNode(hasText("Mari Näidis · X-101") and hasAnyAncestor(hasTestTag("lesson-details"))).performClick()
+        compose.onNode(hasText("Mari Näidis · 101") and hasAnyAncestor(hasTestTag("lesson-details"))).performClick()
         assertEquals(Fixtures.MARI, opened)
         compose.onNodeWithTag("lesson-details").assertDoesNotExist()
     }
