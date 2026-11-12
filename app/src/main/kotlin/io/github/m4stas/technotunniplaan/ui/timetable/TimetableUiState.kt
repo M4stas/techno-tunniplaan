@@ -4,12 +4,14 @@ import io.github.m4stas.technotunniplaan.schedule.*
 import io.github.m4stas.technotunniplaan.store.*
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
-data class DayUi(val date: LocalDate, val rows: List<List<Lesson>>, val highlight: Lesson?)
+data class DayUi(val date: LocalDate, val rows: List<List<Lesson>>, val highlight: Lesson?, val slots: List<SlotUi> = emptyList())
 data class TimetableUiState(
     val entity: EntityRef, val title: String, val entityMissing: Boolean, val isHome: Boolean, val isFavourite: Boolean,
     val days: List<DayUi>, val selectedDate: LocalDate?,
     val weekTitle: String, val weekIsOutdated: Boolean, val lastSyncMillis: Long?, val syncError: SyncError?, val refreshing: Boolean,
+    val nextLesson: NextLessonUi? = null,
 )
 fun timetableUiState(schedule: Schedule, settings: Settings, entity: EntityRef, selected: LocalDate?, now: LocalDateTime, refreshing: Boolean = false): TimetableUiState {
     val dates = schedule.schoolDays()
@@ -20,10 +22,14 @@ fun timetableUiState(schedule: Schedule, settings: Settings, entity: EntityRef, 
     } ?: schedule.initialDate(now.toLocalDate())
     val week = date?.let(schedule::weekOf)
     val found = schedule.find(entity)
+    val today = now.toLocalDate()
+    val next = schedule.nextLessons(entity, now, Int.MAX_VALUE).firstOrNull { it.startsAt > now }
     return TimetableUiState(entity, found?.name.orEmpty(), found == null && schedule.weeks.isNotEmpty(), entity == settings.home,
         entity in settings.favourites, dates.map { day ->
             val lessons = schedule.lessonsOn(entity, day)
-            DayUi(day, lessons.overlapGroups(), if (day == now.toLocalDate()) lessons.highlightIndex(now.toLocalTime())?.let(lessons::get) else null)
-        }, date, week?.title().orEmpty(), week != null && week.monday.plusDays(6) < now.toLocalDate(),
-        settings.lastSyncMillis, settings.lastSyncError, refreshing)
+            DayUi(day, lessons.overlapGroups(), if (day == today) lessons.highlightIndex(now.toLocalTime())?.let(lessons::get) else null,
+                daySlots(lessons, entity, now.toLocalTime().takeIf { day == today }))
+        }, date, week?.title().orEmpty(), week != null && week.monday.plusDays(6) < today,
+        settings.lastSyncMillis, settings.lastSyncError, refreshing,
+        next?.let { NextLessonUi(it.date, it.lesson.start, ChronoUnit.DAYS.between(today, it.date).toInt()) })
 }
