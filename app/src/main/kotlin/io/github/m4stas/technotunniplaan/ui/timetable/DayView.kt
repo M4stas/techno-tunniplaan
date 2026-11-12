@@ -26,7 +26,7 @@ import java.time.LocalDate
     }
     val selectedIndex = state.days.indexOfFirst { it.date == state.selectedDate }.coerceAtLeast(0)
     val pager = rememberPagerState(initialPage = selectedIndex) { state.days.size }
-    LaunchedEffect(state.selectedDate, state.days) { if (pager.currentPage != selectedIndex) pager.scrollToPage(selectedIndex) }
+    LaunchedEffect(state.selectedDate, state.days.map { it.date }) { if (pager.currentPage != selectedIndex) pager.scrollToPage(selectedIndex) }
     val currentState by rememberUpdatedState(state)
     val selectDate by rememberUpdatedState(onSelectDate)
     LaunchedEffect(pager) { snapshotFlow { pager.settledPage }.collect { index -> currentState.days.getOrNull(index)?.let { selectDate(it.date) } } }
