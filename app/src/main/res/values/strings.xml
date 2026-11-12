@@ -7,7 +7,7 @@
     <string name="pick_teacher">Pick your name</string>
     <string name="search">Search</string>
     <string name="offline_title">Can\'t load the timetable</string>
-    <string name="offline_body">Check your internet connection and try again.</string>
+    <string name="offline_body">Check your internet connection. No saved timetable yet.</string>
     <string name="retry">Try again</string>
     <string name="nav_timetable">Timetable</string>
     <string name="nav_browse">Browse</string>
@@ -41,7 +41,26 @@
     <string name="save">Save</string>
     <string name="language_et">Eesti</string>
     <string name="language_en">English</string>
-    <string name="timetable_back">Back</string>
-    <string name="timetable_previous">Previous week</string>
-    <string name="timetable_next">Next week</string>
+    <string name="break_short">%1$d min break</string>
+    <string name="break_lunch">%1$d min lunch</string>
+    <string name="break_free">%1$d min free</string>
+    <string name="lesson_in_progress">In progress</string>
+    <string name="date_pattern">d MMMM</string>
+    <string name="short_date_pattern">d MMM</string>
+    <string name="free_day">Free</string>
+    <string name="next_lesson_today">Next lesson today at %1$s</string>
+    <string name="next_lesson_weekday">Next lesson %1$s at %2$s</string>
+    <string name="next_lesson_date">Next lesson on %1$s at %2$s</string>
+    <string-array name="weekday_letters">
+        <item>M</item><item>T</item><item>W</item><item>T</item><item>F</item><item>S</item><item>S</item>
+    </string-array>
+    <string-array name="weekday_on">
+        <item>on Monday</item><item>on Tuesday</item><item>on Wednesday</item><item>on Thursday</item><item>on Friday</item><item>on Saturday</item><item>on Sunday</item>
+    </string-array>
+
+    <string name="kind_class">Class</string>
+    <string name="kind_teacher">Teacher</string>
+    <string name="kind_room">Room</string>
+    <string name="detail_teacher_room">Teacher · room</string>
+    <string name="time_range" translatable="false">%1$s – %2$s</string>
 </resources>

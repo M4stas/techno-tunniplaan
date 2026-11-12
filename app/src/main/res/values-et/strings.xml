@@ -7,7 +7,7 @@
     <string name="pick_teacher">Vali oma nimi</string>
     <string name="search">Otsi</string>
     <string name="offline_title">Tunniplaani ei saa laadida</string>
-    <string name="offline_body">Kontrolli internetiühendust ja proovi uuesti.</string>
+    <string name="offline_body">Kontrolli internetiühendust. Viimati salvestatud tunniplaani pole veel.</string>
     <string name="retry">Proovi uuesti</string>
     <string name="nav_timetable">Tunniplaan</string>
     <string name="nav_browse">Sirvi</string>
@@ -41,7 +41,25 @@
     <string name="save">Salvesta</string>
     <string name="language_et">Eesti</string>
     <string name="language_en">English</string>
-    <string name="timetable_back">Tagasi</string>
-    <string name="timetable_previous">Eelmine nädal</string>
-    <string name="timetable_next">Järgmine nädal</string>
+    <string name="break_short">%1$d min vahetund</string>
+    <string name="break_lunch">%1$d min lõuna</string>
+    <string name="break_free">%1$d min vaba</string>
+    <string name="lesson_in_progress">Käimas</string>
+    <string name="date_pattern">d. MMMM</string>
+    <string name="short_date_pattern">d.MM</string>
+    <string name="free_day">Vaba</string>
+    <string name="next_lesson_today">Järgmine tund täna %1$s</string>
+    <string name="next_lesson_weekday">Järgmine tund %1$s %2$s</string>
+    <string name="next_lesson_date">Järgmine tund %1$s kell %2$s</string>
+    <string-array name="weekday_letters">
+        <item>E</item><item>T</item><item>K</item><item>N</item><item>R</item><item>L</item><item>P</item>
+    </string-array>
+    <string-array name="weekday_on">
+        <item>esmaspäeval</item><item>teisipäeval</item><item>kolmapäeval</item><item>neljapäeval</item><item>reedel</item><item>laupäeval</item><item>pühapäeval</item>
+    </string-array>
+
+    <string name="kind_class">Klass</string>
+    <string name="kind_teacher">Õpetaja</string>
+    <string name="kind_room">Ruum</string>
+    <string name="detail_teacher_room">Õpetaja · ruum</string>
 </resources>
