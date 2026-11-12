@@ -18,7 +18,7 @@ class BrowseScreenTest {
         var tab: EntityKind? = null
         var opened: EntityRef? = null
         val state = browseUiState(Schedule(listOf(Fixtures.week1())), Settings(favourites = listOf(Fixtures.ROOM_101, Fixtures.MARI)), EntityKind.CLASS, "")
-        compose.setContent { AppTheme(ThemeMode.DARK) { BrowseScreen(state, { tab = it }, {}, { opened = it }) } }
+        compose.setContent { AppTheme(ThemeMode.DARK) { BrowseScreen(state, { tab = it }, {}) { opened = it } } }
         compose.onNodeWithText("Favourites").assertIsDisplayed()
         compose.onNodeWithText("X-101").assertIsDisplayed()
         compose.onNodeWithText("Mari Näidis").assertIsDisplayed().performClick()
@@ -30,7 +30,7 @@ class BrowseScreenTest {
     }
     @Test fun hidesEmptyFavourites() {
         val state = browseUiState(Schedule(listOf(Fixtures.week1())), Settings(), EntityKind.CLASS, "")
-        compose.setContent { AppTheme(ThemeMode.DARK) { BrowseScreen(state, {}, {}, {}) } }
+        compose.setContent { AppTheme(ThemeMode.DARK) { BrowseScreen(state, {}, {}) { } } }
         compose.onNodeWithText("Favourites").assertDoesNotExist()
     }
 }

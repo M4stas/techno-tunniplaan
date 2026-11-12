@@ -20,7 +20,7 @@ import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = p.card, contentColor = p.text) {
         Column(Modifier.testTag("lesson-details").verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(lesson.subject, style = MaterialTheme.typography.headlineSmall, color = p.text)
-            Text(lessonText(lesson, EntityRef(EntityKind.CLASS, "")).time, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = p.accent)
+            Text(lessonText(lesson, EntityRef(EntityKind.CLASS, "")).time, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = p.accentText)
             listOf(Triple(EntityKind.TEACHER, R.string.tab_teachers, lesson.teachers), Triple(EntityKind.CLASS, R.string.tab_classes, lesson.classes), Triple(EntityKind.ROOM, R.string.tab_rooms, lesson.rooms)).forEach { (kind, label, entities) ->
                 if (entities.isNotEmpty()) Text(stringResource(label), color = p.textSecondary)
                 entities.forEach { entity -> TextButton(onClick = { onDismiss(); onOpenEntity(EntityRef(kind, entity.key)) }, modifier = Modifier.fillMaxWidth()) { Text(entity.name, color = p.text) } }

@@ -12,8 +12,6 @@
     <string name="nav_timetable">Tunniplaan</string>
     <string name="nav_browse">Sirvi</string>
     <string name="nav_settings">Seaded</string>
-    <string name="view_day">Päev</string>
-    <string name="view_week">Nädal</string>
     <string name="no_lessons">Tunde pole</string>
     <string name="week_outdated">Selle nädala tunniplaani pole veel avaldatud.</string>
     <string name="update_failed">Tunniplaani uuendamine ebaõnnestus.</string>
