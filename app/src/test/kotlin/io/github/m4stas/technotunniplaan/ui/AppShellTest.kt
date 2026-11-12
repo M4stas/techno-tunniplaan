@@ -155,6 +155,15 @@ class AppShellTest {
         back()
         assertEquals(Routes.SETTINGS, route())
     }
+    @Test fun timetableTabReturnsFromEntityToHome() {
+        open = Fixtures.MARI
+        compose.setContent { Shell() }
+        assertEquals("entity/{kind}/{key}", route())
+        tap("Timetable")
+        assertEquals(Routes.HOME, route())
+        assertNull(compose.runOnIdle { nav.previousBackStackEntry })
+    }
+
     @Test fun islandMarksTheCurrentTab() {
         compose.setContent { Shell() }
         compose.onNodeWithTag("nav-island").assertIsDisplayed()
@@ -163,6 +172,7 @@ class AppShellTest {
         compose.onNodeWithContentDescription("Browse").assertIsSelected()
         compose.onNodeWithContentDescription("Timetable").assertIsNotSelected()
         compose.runOnIdle { open = Fixtures.MARI }
-        listOf("Timetable", "Browse", "Settings").forEach { compose.onNodeWithContentDescription(it).assertIsNotSelected() }
+        compose.onNodeWithContentDescription("Timetable").assertIsSelected()
+        listOf("Browse", "Settings").forEach { compose.onNodeWithContentDescription(it).assertIsNotSelected() }
     }
 }

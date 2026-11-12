@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import io.github.m4stas.technotunniplaan.R
 import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
 
-/** The floating bottom navigation. [current] is the current route, so no tab is active on an entity timetable. */
+/** The floating bottom navigation. [current] is the current route, with Timetable active on home and entity timetables. */
 @Composable fun NavIsland(current: String?, onNavigate: (String) -> Unit, modifier: Modifier = Modifier) {
     val p = LocalPalette.current
     val items = listOf(
@@ -34,7 +34,7 @@ import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
     )
     Row(modifier.testTag("nav-island").clip(CircleShape).background(p.island).padding(6.dp).selectableGroup(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         items.forEach { (route, icon, label) ->
-            val active = current == route
+            val active = current == route || (route == Routes.HOME && current == "entity/{kind}/{key}")
             Box(Modifier.size(48.dp).clip(CircleShape).background(if (active) p.accent else p.island)
                 .selectable(active, role = Role.Tab, onClick = { onNavigate(route) })
                 .semantics { contentDescription = label }, contentAlignment = Alignment.Center) {

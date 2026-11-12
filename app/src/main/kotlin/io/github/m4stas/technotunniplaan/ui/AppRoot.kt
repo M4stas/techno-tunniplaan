@@ -103,10 +103,8 @@ object Routes {
                         override fun <T : ViewModel> create(modelClass: Class<T>): T = TimetableViewModel(entity, container.repository, container.settings, container.sync, container.clock) as T
                     })
                     val state by vm.state.collectAsStateWithLifecycle()
-                    val back: (() -> Unit)? = if (entity == null) null else { { nav.popBackStack() } }
                     state?.let { TimetableScreen(it, vm::selectDate, vm::refresh, vm::toggleFavourite,
-                        { ref -> nav.navigate(Routes.entity(ref)) }, { nav.navigate(Routes.ONBOARDING) },
-                        back) }
+                        { ref -> nav.navigate(Routes.entity(ref)) }, { nav.navigate(Routes.ONBOARDING) }) }
                 }) { nav ->
                     val initialHome = remember { loaded.home }
                     val vm: OnboardingViewModel = viewModel(factory = object : ViewModelProvider.Factory {

@@ -41,7 +41,6 @@
     <string name="save">Salvesta</string>
     <string name="language_et">Eesti</string>
     <string name="language_en">English</string>
-    <string name="timetable_back">Tagasi</string>
     <string name="break_short">%1$d min vahetund</string>
     <string name="break_lunch">%1$d min lõuna</string>
     <string name="break_free">%1$d min vaba</string>

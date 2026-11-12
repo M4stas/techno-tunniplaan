@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -22,6 +23,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.m4stas.technotunniplaan.R
@@ -33,11 +35,18 @@ object Clearance {
     val NavAndDays = 156.dp
 }
 
-@Composable fun ScreenHeader(title: String, subtitle: String?, modifier: Modifier = Modifier) {
+@Composable fun ScreenHeader(title: String, subtitle: String?, modifier: Modifier = Modifier, trailing: (@Composable () -> Unit)? = null) {
     val p = LocalPalette.current
-    Column(modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(title, Modifier.semantics { heading() }, color = p.text, fontSize = 30.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.6).sp)
-        if (subtitle != null) Text(subtitle, color = p.textMuted, fontSize = 14.sp)
+    Column(modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(title, Modifier.weight(1f).semantics { heading() }, color = p.text, fontSize = 30.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.9).sp)
+            // The trailing slot takes no height, so a 48dp touch target leaves the header as tall as one without it.
+            if (trailing != null) Box(Modifier.layout { measurable, constraints ->
+                val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+                layout(placeable.width, 0) { placeable.place(0, -placeable.height / 2) }
+            }) { trailing() }
+        }
+        if (subtitle != null) Text(subtitle, color = p.textMuted, fontSize = 13.sp)
     }
 }
 

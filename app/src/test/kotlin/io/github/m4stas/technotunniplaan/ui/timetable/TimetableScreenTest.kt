@@ -27,7 +27,52 @@ class TimetableScreenTest {
     private fun state(date: LocalDate? = null, now: LocalDateTime = Fixtures.MONDAY.atTime(9, 0), schedule: Schedule = week) =
         timetableUiState(schedule, home, Fixtures.CLASS_A, date, now)
     private fun show(st: TimetableUiState) {
-        compose.setContent { AppTheme(ThemeMode.DARK) { TimetableScreen(st, { selected = it }, { refreshes++ }, {}, {}, {}, null) } }
+        compose.setContent { AppTheme(ThemeMode.DARK) { TimetableScreen(st, { selected = it }, { refreshes++ }, {}, {}, {}) } }
+    }
+
+    @Test fun entityTimetableLooksLikeTheHomeTimetable() {
+        var toggles = 0
+        val st = timetableUiState(week, home, Fixtures.MARI, null, Fixtures.MONDAY.atTime(9, 0))
+        compose.setContent { AppTheme(ThemeMode.DARK) { TimetableScreen(st, {}, {}, { toggles++ }, {}, {}) } }
+        compose.onNodeWithText("Monday").assertIsDisplayed()
+        compose.onNodeWithText("9 November · Mari Näidis").assertIsDisplayed()
+        compose.onNode(hasTestTag("entity-star") and hasContentDescription("Pin")).performClick()
+        assertEquals(1, toggles)
+    }
+
+    @Test fun pinnedEntityOffersUnpin() {
+        show(timetableUiState(week, home.toggleFavourite(Fixtures.MARI), Fixtures.MARI, null, Fixtures.MONDAY.atTime(9, 0)))
+        compose.onNodeWithTag("entity-star").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Unpin").assertExists()
+    }
+
+    @Test fun starTogglesBetweenPinAndUnpin() {
+        var settings by mutableStateOf(home)
+        compose.setContent {
+            AppTheme(ThemeMode.DARK) {
+                TimetableScreen(timetableUiState(week, settings, Fixtures.MARI, null, Fixtures.MONDAY.atTime(9, 0)), {}, {},
+                    { settings = settings.toggleFavourite(Fixtures.MARI) }, {}, {})
+            }
+        }
+        compose.onNodeWithContentDescription("Pin").performClick()
+        compose.onNode(hasTestTag("entity-star") and hasContentDescription("Unpin")).assertExists().performClick()
+        compose.onNode(hasTestTag("entity-star") and hasContentDescription("Pin")).assertExists()
+    }
+
+    @Test fun entityHeaderIsAsTallAsTheHomeHeader() {
+        var entity by mutableStateOf(Fixtures.CLASS_A)
+        compose.setContent {
+            AppTheme(ThemeMode.DARK) { TimetableScreen(timetableUiState(week, home, entity, null, Fixtures.MONDAY.atTime(9, 0)), {}, {}, {}, {}, {}) }
+        }
+        val homeTop = compose.onNodeWithText("9 November · K-XX-24A").getUnclippedBoundsInRoot().top
+        compose.runOnIdle { entity = Fixtures.MARI }
+        val entityTop = compose.onNodeWithText("9 November · Mari Näidis").getUnclippedBoundsInRoot().top
+        assertEquals(homeTop, entityTop)
+    }
+
+    @Test fun homeTimetableHasNoStar() {
+        show(state())
+        compose.onNodeWithTag("entity-star").assertDoesNotExist()
     }
 
     @Test fun headerShowsTheDayAndTheEntity() {
@@ -54,7 +99,7 @@ class TimetableScreenTest {
         var date by mutableStateOf<LocalDate?>(Fixtures.MONDAY.plusDays(4))
         compose.setContent {
             AppTheme(ThemeMode.DARK) {
-                TimetableScreen(timetableUiState(twoWeeks, home, Fixtures.CLASS_A, date, Fixtures.MONDAY.atTime(9, 0)), { date = it }, {}, {}, {}, {}, null)
+                TimetableScreen(timetableUiState(twoWeeks, home, Fixtures.CLASS_A, date, Fixtures.MONDAY.atTime(9, 0)), { date = it }, {}, {}, {}, {})
             }
         }
         compose.onNodeWithTag("thumb-day-2026-11-13").assertIsSelected()
@@ -83,6 +128,7 @@ class TimetableScreenTest {
         show(state(schedule = Schedule(emptyList())))
         compose.onNodeWithTag("load-failed").assertIsDisplayed()
         compose.onNodeWithTag("thumb-days").assertDoesNotExist()
+        compose.onNodeWithText("Timetable").assertDoesNotExist()
         compose.onNodeWithText("Try again").performClick()
         assertEquals(1, refreshes)
     }

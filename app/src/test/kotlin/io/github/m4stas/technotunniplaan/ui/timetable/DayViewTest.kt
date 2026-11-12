@@ -15,7 +15,7 @@ import org.robolectric.RobolectricTestRunner
 class DayViewTest {
  @get:Rule val compose = createComposeRule()
  private fun state() = timetableUiState(Schedule(listOf(Fixtures.week1())),Settings(home=Fixtures.CLASS_A),Fixtures.CLASS_A,null,Fixtures.MONDAY.atTime(9,0))
- private fun show(st: TimetableUiState, pick: () -> Unit = {}) { compose.setContent { AppTheme(ThemeMode.DARK) { TimetableScreen(st, {}, {}, {}, {}, pick, null) } } }
+ private fun show(st: TimetableUiState, pick: () -> Unit = {}) { compose.setContent { AppTheme(ThemeMode.DARK) { TimetableScreen(st, {}, {}, {}, {}, pick) } } }
  @Test fun lessons() {
      show(state())
      compose.onAllNodesWithTag("slot-current", useUnmergedTree = true).assertCountEquals(1)

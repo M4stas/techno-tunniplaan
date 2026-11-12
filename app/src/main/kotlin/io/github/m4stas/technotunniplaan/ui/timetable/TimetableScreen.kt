@@ -2,7 +2,7 @@ package io.github.m4stas.technotunniplaan.ui.timetable
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.m4stas.technotunniplaan.R
 import io.github.m4stas.technotunniplaan.schedule.EntityRef
+import io.github.m4stas.technotunniplaan.ui.components.CircleButton
 import io.github.m4stas.technotunniplaan.ui.components.IslandFade
 import io.github.m4stas.technotunniplaan.ui.components.PrimaryButton
 import io.github.m4stas.technotunniplaan.ui.components.ScreenHeader
@@ -24,7 +25,7 @@ import java.time.LocalDate
 private const val SEPARATOR = " · "
 
 @Composable fun TimetableScreen(state: TimetableUiState, onSelectDate: (LocalDate) -> Unit, onRefresh: () -> Unit,
-    onToggleFavourite: () -> Unit, onOpenEntity: (EntityRef) -> Unit, onPickAgain: () -> Unit, onBack: (() -> Unit)?) {
+    onToggleFavourite: () -> Unit, onOpenEntity: (EntityRef) -> Unit, onPickAgain: () -> Unit) {
     val p = LocalPalette.current
     val locale = LocalConfiguration.current.locales[0]
     var openSlot by remember { mutableStateOf<SlotUi?>(null) }
@@ -37,15 +38,19 @@ private const val SEPARATOR = " · "
     val weekDays = state.days.map { it.date }.filter { it.with(DayOfWeek.MONDAY) == monday }
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                if (onBack != null) IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.timetable_back), tint = p.text) }
-                if (!state.isHome) IconButton(onClick = onToggleFavourite) { Icon(painterResource(R.drawable.ic_pin), stringResource(if (state.isFavourite) R.string.unpin else R.string.pin), tint = if (state.isFavourite) p.accentText else p.textSecondary) }
-            }
-            if (date == null) {
-                ScreenHeader(state.title.ifEmpty { stringResource(R.string.nav_timetable) }, null)
-            } else {
+            if (date != null) {
                 val dateText = dateLabel(date, stringResource(R.string.date_pattern), locale)
-                ScreenHeader(dayTitle(date, locale), listOf(dateText, state.title).filter { it.isNotEmpty() }.joinToString(SEPARATOR))
+                ScreenHeader(
+                    dayTitle(date, locale),
+                    listOf(dateText, state.title).filter { it.isNotEmpty() }.joinToString(SEPARATOR),
+                    trailing = if (state.isHome) null else {
+                        {
+                            CircleButton(Icons.Filled.Star,
+                                stringResource(if (state.isFavourite) R.string.unpin else R.string.pin),
+                                onToggleFavourite, Modifier.testTag("entity-star"), active = state.isFavourite)
+                        }
+                    },
+                )
             }
             if (state.entityMissing) {
                 Column(Modifier.testTag("entity-missing").padding(horizontal = 20.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
