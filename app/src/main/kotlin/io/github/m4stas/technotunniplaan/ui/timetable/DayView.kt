@@ -28,18 +28,15 @@ import java.time.LocalDate
     }
     val selectedIndex = state.days.indexOfFirst { it.date == state.selectedDate }.coerceAtLeast(0)
     val dates = state.days.map { it.date }
-    // A day picked on the same set of days slides there; a new week or a changed day list jumps without animating.
-    val lastDates = remember { object { var value = dates } }
-    LaunchedEffect(state.selectedDate, dates) {
-        val sameDays = lastDates.value == dates
-        lastDates.value = dates
-        if (pager.currentPage != selectedIndex) {
-            if (sameDays) pager.animateScrollToPage(selectedIndex, animationSpec = Motion.medium()) else pager.scrollToPage(selectedIndex)
-        }
-    }
     val currentState by rememberUpdatedState(state)
     val selectDate by rememberUpdatedState(onSelectDate)
-    LaunchedEffect(pager) { snapshotFlow { pager.settledPage }.collect { index -> currentState.days.getOrNull(index)?.let { selectDate(it.date) } } }
+    LaunchedEffect(pager, dates) {
+        pager.scrollToPage(selectedIndex)
+        snapshotFlow { pager.settledPage }.collect { index -> currentState.days.getOrNull(index)?.let { selectDate(it.date) } }
+    }
+    LaunchedEffect(pager, state.selectedDate, dates) {
+        if (pager.currentPage != selectedIndex) pager.animateScrollToPage(selectedIndex, animationSpec = Motion.medium())
+    }
     PullToRefreshBox(state.refreshing, onRefresh, Modifier.fillMaxSize().testTag("day-list")) {
         HorizontalPager(pager, Modifier.fillMaxSize()) { index ->
             val day = state.days[index]

@@ -132,4 +132,36 @@ class TimetableScreenTest {
         compose.onNodeWithText("Try again").performClick()
         assertEquals(1, refreshes)
     }
+
+    @Test fun emptyCacheRecoveryKeepsTodayUntilTheUserSelectsAnotherDay() {
+        val thursday = LocalDate.of(2026, 11, 12)
+        var schedule by mutableStateOf(Schedule(emptyList()))
+        var date by mutableStateOf<LocalDate?>(null)
+        val selections = mutableListOf<LocalDate>()
+        compose.setContent {
+            AppTheme(ThemeMode.DARK) {
+                TimetableScreen(state(date, thursday.atTime(9, 0), schedule), {
+                    selections.add(it)
+                    date = it
+                }, {}, {}, {}, {})
+            }
+        }
+        compose.onNodeWithTag("load-failed").assertIsDisplayed()
+        compose.runOnIdle { schedule = week }
+        compose.onNodeWithText("Thursday").assertIsDisplayed()
+        compose.onNodeWithTag("thumb-day-2026-11-12").assertIsSelected()
+        compose.runOnIdle {
+            assertTrue(selections.isNotEmpty())
+            assertTrue(selections.all { it == thursday })
+        }
+        compose.onNodeWithTag("thumb-day-2026-11-11").performClick()
+        compose.onNodeWithText("Wednesday").assertIsDisplayed()
+        compose.onNodeWithTag("thumb-day-2026-11-11").assertIsSelected()
+        compose.onNodeWithTag("day-list").performTouchInput { swipeLeft() }
+        compose.onNodeWithText("Thursday").assertIsDisplayed()
+        compose.onNodeWithTag("thumb-day-2026-11-12").assertIsSelected()
+        compose.onNodeWithTag("day-list").performTouchInput { swipeRight() }
+        compose.onNodeWithText("Wednesday").assertIsDisplayed()
+        compose.onNodeWithTag("thumb-day-2026-11-11").assertIsSelected()
+    }
 }
