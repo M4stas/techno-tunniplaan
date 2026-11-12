@@ -27,8 +27,8 @@ import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 listOf(EntityKind.CLASS to R.string.tab_classes, EntityKind.TEACHER to R.string.tab_teachers, EntityKind.ROOM to R.string.tab_rooms).forEach { (kind, label) ->
-                    Surface(onClick = { onTab(kind) }, shape = RoundedCornerShape(50), color = if (state.tab == kind) p.highlight else p.surface, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(label), Modifier.padding(horizontal = 8.dp, vertical = 14.dp), color = if (state.tab == kind) p.accent else p.textSecondary)
+                    Surface(onClick = { onTab(kind) }, shape = RoundedCornerShape(50), color = if (state.tab == kind) p.selected else p.surface, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(label), Modifier.padding(horizontal = 8.dp, vertical = 14.dp), color = if (state.tab == kind) p.onSelected else p.textSecondary)
                     }
                 }
             }
@@ -36,8 +36,8 @@ import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
         item {
             OutlinedTextField(state.query, onQuery, label = { Text(stringResource(R.string.search), color = p.textSecondary) }, singleLine = true,
                 shape = RoundedCornerShape(50), modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = p.text, unfocusedTextColor = p.text, cursorColor = p.accent,
-                    focusedBorderColor = p.accent, unfocusedBorderColor = p.outline, focusedContainerColor = p.surface, unfocusedContainerColor = p.surface))
+                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = p.text, unfocusedTextColor = p.text, cursorColor = p.accentText,
+                    focusedBorderColor = p.accentText, unfocusedBorderColor = p.outline, focusedContainerColor = p.surface, unfocusedContainerColor = p.surface))
         }
         items(state.results) { entity ->
             Surface(onClick = { onOpen(EntityRef(state.tab, entity.key)) }, shape = RoundedCornerShape(24.dp), color = p.card, modifier = Modifier.fillMaxWidth()) {

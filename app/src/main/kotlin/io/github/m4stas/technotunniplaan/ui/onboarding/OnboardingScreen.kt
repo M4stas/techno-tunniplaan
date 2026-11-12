@@ -20,7 +20,7 @@ import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
     Surface(Modifier.fillMaxSize(), color = p.background) {
         Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
             when (state) {
-                OnboardingState.Loading -> CircularProgressIndicator(color = p.accent)
+                OnboardingState.Loading -> CircularProgressIndicator(color = p.accentText)
                 OnboardingState.Offline -> {
                     Text(stringResource(R.string.offline_title), style = MaterialTheme.typography.headlineMedium, color = p.text)
                     Text(stringResource(R.string.offline_body), color = p.textSecondary)

@@ -167,7 +167,7 @@ object Routes {
             Surface(Modifier.padding(16.dp).fillMaxWidth(), shape = RoundedCornerShape(32.dp), color = p.surface) {
                 Row(Modifier.padding(8.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
                     listOf(Routes.HOME to R.string.nav_timetable, Routes.BROWSE to R.string.nav_browse, Routes.SETTINGS to R.string.nav_settings).forEach { (route, label) ->
-                        TextButton(onClick = { nav.navigate(route) { popUpTo(Routes.HOME); launchSingleTop = true } }) { Text(stringResource(label), color = if (entry?.destination?.route == route) p.accent else p.textSecondary) }
+                        TextButton(onClick = { nav.navigate(route) { popUpTo(Routes.HOME); launchSingleTop = true } }) { Text(stringResource(label), color = if (entry?.destination?.route == route) p.accentText else p.textSecondary) }
                     }
                 }
             }

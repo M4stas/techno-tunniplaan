@@ -27,15 +27,15 @@ import java.time.LocalDate
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (onBack != null) IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.timetable_back), tint = p.text) }
             Text(state.title, Modifier.weight(1f).padding(vertical = 16.dp), color = p.text, style = MaterialTheme.typography.titleLarge)
-            if (!state.isHome) IconButton(onClick = onToggleFavourite) { Icon(painterResource(R.drawable.ic_pin), stringResource(if (state.isFavourite) R.string.unpin else R.string.pin), tint = if (state.isFavourite) p.accent else p.textSecondary) }
+            if (!state.isHome) IconButton(onClick = onToggleFavourite) { Icon(painterResource(R.drawable.ic_pin), stringResource(if (state.isFavourite) R.string.unpin else R.string.pin), tint = if (state.isFavourite) p.accentText else p.textSecondary) }
         }
         Row(Modifier.padding(horizontal = 16.dp)) {
             listOf(ViewMode.DAY to R.string.view_day, ViewMode.WEEK to R.string.view_week).forEach { (mode, label) ->
-                TextButton(onClick = { onViewMode(mode) }, modifier = Modifier.testTag(if (mode == ViewMode.DAY) "view-day" else "view-week")) { Text(stringResource(label), color = if (state.viewMode == mode) p.accent else p.textSecondary) }
+                TextButton(onClick = { onViewMode(mode) }, modifier = Modifier.testTag(if (mode == ViewMode.DAY) "view-day" else "view-week")) { Text(stringResource(label), color = if (state.viewMode == mode) p.accentText else p.textSecondary) }
             }
         }
         if (state.entityMissing) {
-            Column(Modifier.testTag("entity-missing").padding(24.dp)) { Text(stringResource(R.string.entity_missing), color = p.text); TextButton(onClick = onPickAgain) { Text(stringResource(R.string.pick_again), color = p.accent) } }
+            Column(Modifier.testTag("entity-missing").padding(24.dp)) { Text(stringResource(R.string.entity_missing), color = p.text); TextButton(onClick = onPickAgain) { Text(stringResource(R.string.pick_again), color = p.accentText) } }
         } else {
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                 val monday = state.selectedDate?.with(java.time.DayOfWeek.MONDAY)

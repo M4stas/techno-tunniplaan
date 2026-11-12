@@ -58,17 +58,17 @@ class WidgetConfigActivity : AppCompatActivity() {
                             Text(stringResource(R.string.widget_name), color = p.text, style = MaterialTheme.typography.titleLarge)
                             FilterChip(selected = config.entity == null, onClick = { config = config.copy(entity = null) },
                                 label = { Text(stringResource(R.string.settings_home)) },
-                                colors = FilterChipDefaults.filterChipColors(containerColor = p.surface, labelColor = p.text, selectedContainerColor = p.highlight, selectedLabelColor = p.accent))
+                                colors = FilterChipDefaults.filterChipColors(containerColor = p.surface, labelColor = p.text, selectedContainerColor = p.selected, selectedLabelColor = p.onSelected))
                             config.entity?.let { ref -> Text(Schedule(weeks ?: emptyList()).find(ref)?.name ?: ref.key, color = p.text) }
                             Text(stringResource(R.string.widget_count), color = p.textSecondary)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 (1..5).forEach { count ->
                                     FilterChip(selected = config.count == count, onClick = { config = config.copy(count = count) }, label = { Text(count.toString()) },
-                                        colors = FilterChipDefaults.filterChipColors(containerColor = p.surface, labelColor = p.text, selectedContainerColor = p.highlight, selectedLabelColor = p.accent))
+                                        colors = FilterChipDefaults.filterChipColors(containerColor = p.surface, labelColor = p.text, selectedContainerColor = p.selected, selectedLabelColor = p.onSelected))
                                 }
                             }
                             Box(Modifier.weight(1f)) { BrowseScreen(state, browse::setTab, browse::setQuery) { config = config.copy(entity = it) } }
-                            Button(enabled = !saving, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = p.accent, contentColor = p.onAccent),
+                            Button(enabled = !saving, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = p.selected, contentColor = p.onSelected),
                                 modifier = Modifier.fillMaxWidth(), onClick = {
                                     saving = true
                                     lifecycleScope.launch {

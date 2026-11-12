@@ -26,7 +26,7 @@ import java.time.format.FormatStyle
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Text(stringResource(R.string.nav_settings), color = p.text, style = MaterialTheme.typography.headlineMedium)
         SettingsSection(stringResource(R.string.settings_home)) {
-            TextButton(onClick = onChangeHome) { Text(state.homeTitle, color = p.accent) }
+            TextButton(onClick = onChangeHome) { Text(state.homeTitle, color = p.accentText) }
         }
         if (state.splits.isNotEmpty()) SettingsSection(stringResource(R.string.settings_groups)) {
             state.splits.forEach { item ->
@@ -42,7 +42,7 @@ import java.time.format.FormatStyle
         val locale = LocalConfiguration.current.locales[0]
         val time = state.lastSyncMillis?.let { DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withLocale(locale).withZone(SCHOOL_ZONE).format(Instant.ofEpochMilli(it)) }
         Text(if (time == null) stringResource(R.string.never_synced) else stringResource(R.string.last_synced, time), color = p.textSecondary)
-        Button(onClick = onSyncNow, enabled = !state.syncing, colors = ButtonDefaults.buttonColors(containerColor = p.accent, contentColor = p.onAccent, disabledContainerColor = p.surface, disabledContentColor = p.textSecondary)) { Text(stringResource(R.string.sync_now)) }
+        Button(onClick = onSyncNow, enabled = !state.syncing, colors = ButtonDefaults.buttonColors(containerColor = p.selected, contentColor = p.onSelected, disabledContainerColor = p.surface, disabledContentColor = p.textSecondary)) { Text(stringResource(R.string.sync_now)) }
     }
 }
 @Composable private fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
@@ -59,9 +59,9 @@ import java.time.format.FormatStyle
     val p = LocalPalette.current
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         options.forEach { (value, label) ->
-            Surface(shape = RoundedCornerShape(50), color = if (value == selected) p.highlight else p.surface,
+            Surface(shape = RoundedCornerShape(50), color = if (value == selected) p.selected else p.surface,
                 modifier = Modifier.selectable(value == selected, role = Role.RadioButton, onClick = { onSelect(value) })) {
-                Text(label, Modifier.padding(horizontal = 16.dp, vertical = 14.dp), color = if (value == selected) p.accent else p.text)
+                Text(label, Modifier.padding(horizontal = 16.dp, vertical = 14.dp), color = if (value == selected) p.onSelected else p.text)
             }
         }
     }

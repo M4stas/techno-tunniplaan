@@ -30,7 +30,7 @@ import java.time.format.DateTimeFormatter
     Column(Modifier.testTag("day-list")) {
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.SpaceEvenly) {
             state.days.filter { it.date.with(java.time.DayOfWeek.MONDAY) == state.selectedDate?.with(java.time.DayOfWeek.MONDAY) }.forEach { day ->
-                TextButton(onClick = { onSelectDate(day.date) }) { Text(day.date.format(DateTimeFormatter.ofPattern("EEE d")), color = if (day.date == state.selectedDate) p.accent else p.textSecondary) }
+                TextButton(onClick = { onSelectDate(day.date) }) { Text(day.date.format(DateTimeFormatter.ofPattern("EEE d")), color = if (day.date == state.selectedDate) p.accentText else p.textSecondary) }
             }
         }
         PullToRefreshBox(state.refreshing, onRefresh, Modifier.fillMaxSize()) {

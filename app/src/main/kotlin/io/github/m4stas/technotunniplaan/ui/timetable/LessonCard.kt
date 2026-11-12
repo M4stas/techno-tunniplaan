@@ -15,9 +15,9 @@ import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
 @Composable fun LessonCard(lesson: Lesson, entity: EntityRef, highlighted: Boolean, modifier: Modifier = Modifier, onLessonClick: (Lesson) -> Unit = {}) {
     val p = LocalPalette.current
     val text = lessonText(lesson, entity)
-    Surface(modifier = modifier.testTag("lesson-card"), shape = RoundedCornerShape(24.dp), color = if (highlighted) p.highlight else p.card) {
+    Surface(modifier = modifier.testTag("lesson-card"), shape = RoundedCornerShape(24.dp), color = if (highlighted) p.currentCard else p.card) {
         Column(Modifier.then(if (highlighted) Modifier.testTag("lesson-highlighted") else Modifier).clickable { onLessonClick(lesson) }.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(text.time, color = if (highlighted) p.accent else p.text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(text.time, color = if (highlighted) p.accentText else p.text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(text.title, color = p.text, style = MaterialTheme.typography.titleMedium)
             text.subGroup?.let { Text(it, color = p.textSecondary) }
             if (text.place.isNotEmpty()) Text(text.place, color = p.textSecondary)

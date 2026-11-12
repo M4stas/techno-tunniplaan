@@ -11,5 +11,8 @@ internal data class WidgetColors(val background: androidx.glance.unit.ColorProvi
 internal fun widgetColors(mode: ThemeMode): WidgetColors {
     fun provider(color: (Palette) -> Color): androidx.glance.unit.ColorProvider =
         ColorProvider(day = color(paletteFor(mode, false)), night = color(paletteFor(mode, true)))
-    return WidgetColors(provider { it.background }, provider { it.text }, provider { it.textSecondary }, provider { it.accent })
+    return WidgetColors(provider { it.background }, provider { it.text }, provider { it.textSecondary }, provider(::widgetAccent))
 }
+
+/** The widget's time text. Lime on the dark widget, olive on the light one. */
+internal fun widgetAccent(p: Palette): Color = p.accentText
