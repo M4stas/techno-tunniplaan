@@ -35,6 +35,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.compose.ui.platform.LocalView
 import io.github.m4stas.technotunniplaan.ui.settings.*
+import io.github.m4stas.technotunniplaan.ui.components.IslandFade
 
 object Routes {
     const val ONBOARDING = "onboarding"
@@ -164,6 +165,7 @@ object Routes {
         }
         val route = entry?.destination?.route
         if (route != Routes.ONBOARDING) {
+            if (route != Routes.HOME && route != "entity/{kind}/{key}") IslandFade(Modifier.align(Alignment.BottomCenter))
             NavIsland(route, { target -> nav.navigate(target) { popUpTo(Routes.HOME); launchSingleTop = true } },
                 Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
         }
