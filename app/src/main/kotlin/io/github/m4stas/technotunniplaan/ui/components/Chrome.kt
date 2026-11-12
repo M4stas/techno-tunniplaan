@@ -39,7 +39,7 @@ object Clearance {
     val p = LocalPalette.current
     Column(modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(title, Modifier.weight(1f).semantics { heading() }, color = p.text, fontSize = 30.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.9).sp)
+            Text(title, Modifier.weight(1f).semantics { heading() }, color = p.text, fontSize = 36.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold, letterSpacing = (-1.1).sp)
             // The trailing slot takes no height, so a 48dp touch target leaves the header as tall as one without it.
             if (trailing != null) Box(Modifier.layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))

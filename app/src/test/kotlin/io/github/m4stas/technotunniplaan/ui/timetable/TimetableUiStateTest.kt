@@ -6,23 +6,16 @@ import java.time.LocalTime
 import org.junit.Test
 import org.junit.Assert.*
 class TimetableUiStateTest {
- @Test fun unavailableSaturdayStaysInDestinationWeek() {
-     val first = Fixtures.week1()
-     val second = Fixtures.week2()
+ @Test fun saturdayIsNeverShown() {
+     val week = Fixtures.week1()
+     val withSaturday = week.copy(lessons = week.lessons + week.lessons.first().copy(day = 5))
+     val schedule = Schedule(listOf(withSaturday))
      val home = Settings(home = Fixtures.CLASS_A)
-     val now = Fixtures.MONDAY.atTime(9, 0)
-     for ((destination, source) in listOf(second to first, first to second)) {
-         val saturdaySource = source.copy(lessons = source.lessons + source.lessons.first().copy(day = 5))
-         val schedule = Schedule(listOf(saturdaySource, destination))
-         val sourceState = timetableUiState(schedule, home, Fixtures.CLASS_A, source.monday.plusDays(5), now)
-         assertEquals(source.monday.plusDays(5), sourceState.selectedDate)
-         val requested = destination.monday.plusDays(5)
-         val result = timetableUiState(schedule, home, Fixtures.CLASS_A, requested, now)
-         assertEquals(destination.monday.plusDays(4), result.selectedDate)
-         assertEquals(destination.title(), result.weekTitle)
-         val weekday = timetableUiState(schedule, home, Fixtures.CLASS_A, destination.monday.plusDays(2), now)
-         assertEquals(destination.monday.plusDays(2), weekday.selectedDate)
-     }
+     val state = timetableUiState(schedule, home, Fixtures.CLASS_A, week.monday.plusDays(5), Fixtures.MONDAY.atTime(9, 0))
+     assertEquals(5, state.days.size)
+     assertEquals(week.monday.plusDays(4), state.selectedDate)
+     assertEquals(week.title(), state.weekTitle)
+     assertTrue(state.weekTitle.endsWith("13.11"))
  }
  @Test fun buildsDayState() {
  val s = Schedule(listOf(Fixtures.week1())); val mon = Fixtures.MONDAY; val home = Settings(home = Fixtures.CLASS_A)
