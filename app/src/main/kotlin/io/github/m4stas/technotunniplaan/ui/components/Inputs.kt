@@ -52,21 +52,23 @@ import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
 data class SegmentOption<out T>(val value: T, val label: String, val description: String? = null)
 
 /** A pill track with one active pill. Full width by default. [compact] sizes it to its labels, for use inside a row. */
-@Composable fun <T> Segmented(options: List<SegmentOption<T>>, selected: T, onSelect: (T) -> Unit, modifier: Modifier = Modifier, compact: Boolean = false) {
+@Composable fun <T> Segmented(options: List<SegmentOption<T>>, selected: T, onSelect: (T) -> Unit, modifier: Modifier = Modifier, compact: Boolean = false, dense: Boolean = false) {
     val p = LocalPalette.current
-    Row(modifier.clip(CircleShape).background(p.track).padding(4.dp).selectableGroup(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+    Row(modifier.clip(CircleShape).background(p.track).padding(if (dense) 3.dp else 4.dp).selectableGroup(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
         options.forEach { option ->
             val active = option.value == selected
             val described = option.description
-            val fill by animateColorAsState(if (active) p.selected else p.track, Motion.fast(), label = "segment-fill")
-            val ink by animateColorAsState(if (active) p.onSelected else p.textSecondary, Motion.fast(), label = "segment-ink")
-            Box((if (compact) Modifier else Modifier.weight(1f))
-                .heightIn(min = if (compact) 40.dp else 44.dp).clip(CircleShape).background(fill)
+            val activeFill = if (dense) p.segmentActive else p.selected
+            val activeInk = if (dense) p.onSegmentActive else p.onSelected
+            val fill by animateColorAsState(if (active) activeFill else p.track, Motion.fast(), label = "segment-fill")
+            val ink by animateColorAsState(if (active) activeInk else p.textSecondary, Motion.fast(), label = "segment-ink")
+            Box((if (compact || dense) Modifier else Modifier.weight(1f))
+                .heightIn(min = if (dense) 36.dp else if (compact) 40.dp else 44.dp).clip(CircleShape).background(fill)
                 .selectable(active, role = Role.RadioButton, onClick = { onSelect(option.value) })
                 .then(if (described != null) Modifier.semantics { contentDescription = described } else Modifier)
-                .padding(horizontal = if (compact) 14.dp else 8.dp), contentAlignment = Alignment.Center) {
+                .padding(horizontal = if (dense) 10.dp else if (compact) 14.dp else 8.dp), contentAlignment = Alignment.Center) {
                 Text(option.label, if (described != null) Modifier.clearAndSetSemantics { } else Modifier,
-                    color = ink, fontSize = 13.sp,
+                    color = ink, fontSize = if (dense) 12.sp else 13.sp,
                     fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium, maxLines = 1)
             }
         }

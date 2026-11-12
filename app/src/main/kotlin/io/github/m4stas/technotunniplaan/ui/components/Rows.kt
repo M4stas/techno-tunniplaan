@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
 
@@ -22,12 +23,12 @@ fun stackShape(index: Int, count: Int): RoundedCornerShape {
     return RoundedCornerShape(top, top, bottom, bottom)
 }
 
-@Composable fun StackRow(index: Int, count: Int, onClick: (() -> Unit)?, modifier: Modifier = Modifier, selected: Boolean = false, content: @Composable RowScope.() -> Unit) {
+@Composable fun StackRow(index: Int, count: Int, onClick: (() -> Unit)?, modifier: Modifier = Modifier, selected: Boolean = false, minHeight: Dp = 56.dp, content: @Composable RowScope.() -> Unit) {
     val p = LocalPalette.current
     val shape = stackShape(index, count)
     Row(modifier.fillMaxWidth().clip(shape).background(if (selected) p.selectedRow else p.card).border(1.dp, p.cardOutline, shape)
         .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-        .heightIn(min = 56.dp).padding(horizontal = 16.dp, vertical = 10.dp),
+        .heightIn(min = minHeight).padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), content = content)
 }
 

@@ -23,8 +23,6 @@
     <string name="pin">Pin</string>
     <string name="unpin">Unpin</string>
     <string name="settings_home">My timetable</string>
-    <string name="settings_groups">Groups</string>
-    <string name="groups_all">All groups</string>
     <string name="settings_theme">Theme</string>
     <string name="theme_system">Follow system</string>
     <string name="theme_dark">Dark</string>
@@ -59,4 +57,11 @@
     <string name="kind_room">Room</string>
     <string name="detail_teacher_room">Teacher · room</string>
     <string name="time_range" translatable="false">%1$s – %2$s</string>
+    <string name="settings_app">App</string>
+    <string name="option_auto">Auto</string>
+    <string name="sync_short">Update</string>
+    <string name="last_synced_today">Updated today %1$s</string>
+    <string name="last_synced_yesterday">Updated yesterday %1$s</string>
+    <string name="language_et_short" translatable="false">ET</string>
+    <string name="language_en_short" translatable="false">EN</string>
 </resources>

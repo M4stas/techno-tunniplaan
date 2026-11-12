@@ -14,7 +14,6 @@ class SettingsViewModel(repository: TimetableRepository, private val settings: S
     val state: StateFlow<SettingsUiState> = combine(repository.weeks, settings.settings, syncing) { weeks, preferences, active ->
         settingsUiState(Schedule(weeks ?: emptyList()), preferences, active)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), settingsUiState(Schedule(emptyList()), Settings()))
-    fun chooseGroup(split: Split, group: String?) = write { it.copy(subGroupChoices = if (group == null) it.subGroupChoices - split.id else it.subGroupChoices + (split.id to group)) }
     fun setTheme(mode: ThemeMode) = write { it.copy(theme = mode) }
     private fun write(transform: (Settings) -> Settings) { viewModelScope.launch { try { settings.update(transform) } catch (_: IOException) { } } }
     fun syncNow() {

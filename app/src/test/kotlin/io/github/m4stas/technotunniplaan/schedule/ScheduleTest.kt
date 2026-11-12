@@ -17,7 +17,7 @@ class ScheduleTest {
     private fun at(day: Long, h: Int, m: Int) = mon.plusDays(day).atTime(h, m)
     private fun List<Lesson>.subjects() = map { it.subject }
 
-    @Test fun entityLessonsAndFiltering() {
+    @Test fun entityLessonsIncludeBothGroups() {
         assertEquals(listOf("Matemaatika", "Inglise keel", "Inglise keel"), s.lessonsOn(CLASS_A, mon).subjects())
         assertEquals(listOf("Kehaline kasvatus"), s.lessonsOn(CLASS_A, mon.plusDays(1)).subjects())
         assertEquals(listOf("Programmeerimine", "Kehaline kasvatus"), s.lessonsOn(CLASS_B, mon.plusDays(1)).subjects())
@@ -26,11 +26,6 @@ class ScheduleTest {
         assertEquals(setOf(0, 1, 2, 4), s.week(CLASS_A, mon).keys)
         assertEquals(emptyList<Lesson>(), s.lessonsOn(CLASS_A, mon.minusDays(3)))
         assertEquals(emptyList<Lesson>(), s.lessonsOn(EntityRef(EntityKind.CLASS, "nobody"), mon))
-        val f = Schedule(listOf(Fixtures.week1()), SubGroupFilter("k-xx-24a", mapOf("Grupp 1|Grupp 2" to "Grupp 2")))
-        assertEquals(listOf("Mari Näidis", "Tiit Katse"), f.lessonsOn(CLASS_A, mon).map { it.teachers[0].name })
-        assertEquals(1, f.lessonsOn(JAAN, mon).size)
-        assertEquals(listOf(Split("k-xx-24a", listOf("Grupp 1", "Grupp 2"))), s.splitsFor("k-xx-24a"))
-        assertEquals(emptyList<Split>(), s.splitsFor("k-xx-24b"))
     }
     @Test fun upcomingLessonsAndDays() {
         assertEquals(listOf("Matemaatika", "Inglise keel"), s.nextLessons(CLASS_A, at(0, 9, 0), 2).map { it.lesson.subject })

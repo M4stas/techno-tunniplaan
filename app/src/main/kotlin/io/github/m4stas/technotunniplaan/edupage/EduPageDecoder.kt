@@ -25,7 +25,7 @@ object EduPageDecoder {
         RawTimetable(
             table(rows, "periods"), table(rows, "classes"), table(rows, "teachers"),
             table(rows, "classrooms"), table(rows, "subjects"), table(rows, "groups"),
-            table(rows, "divisions"), table(rows, "lessons"), table(rows, "cards"),
+            table(rows, "lessons"), table(rows, "cards"),
         )
     }
 

@@ -4,13 +4,12 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-data class SubGroupFilter(val classKey: String, val choices: Map<String, String>)
 data class DatedLesson(val date: LocalDate, val lesson: Lesson) {
     val startsAt: LocalDateTime get() = date.atTime(lesson.start)
     val endsAt: LocalDateTime get() = date.atTime(lesson.end)
 }
 
-class Schedule(weeks: List<Timetable>, private val filter: SubGroupFilter? = null) {
+class Schedule(weeks: List<Timetable>) {
     val weeks = weeks.sortedBy { it.monday }
     fun entities(kind: EntityKind): List<Entity> = weeks.flatMap {
         when (kind) {
@@ -20,8 +19,6 @@ class Schedule(weeks: List<Timetable>, private val filter: SubGroupFilter? = nul
         }
     }.associateBy { it.key }.values.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
     fun find(ref: EntityRef): Entity? = entities(ref.kind).find { it.key == ref.key }
-    fun splitsFor(classKey: String): List<Split> = weeks.flatMap { it.splits }
-        .filter { it.classKey == classKey }.distinctBy { it.id }
     fun schoolDays(): List<LocalDate> = weeks.flatMap { week ->
         // The school has no Saturday, so Saturday lessons are never shown.
         (0..4).map { week.monday.plusDays(it.toLong()) }
@@ -39,13 +36,7 @@ class Schedule(weeks: List<Timetable>, private val filter: SubGroupFilter? = nul
                 EntityKind.TEACHER -> lesson.teachers
                 EntityKind.ROOM -> lesson.rooms
             }.any { it.key == entity.key }
-            val visible = filter == null || entity != EntityRef(EntityKind.CLASS, filter.classKey) ||
-                splitsFor(filter.classKey).all { split ->
-                    val choice = filter.choices[split.id]
-                    val groups = lesson.subGroups.filter { it.classKey == filter.classKey && it.name in split.groups }
-                    choice == null || groups.isEmpty() || groups.any { it.name == choice }
-                }
-            lesson.day == day && matches && visible
+            lesson.day == day && matches
         }.sortedBy { it.start }
     }
     fun week(entity: EntityRef, monday: LocalDate): Map<Int, List<Lesson>> = (0..6).associateWith {

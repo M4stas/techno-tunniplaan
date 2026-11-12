@@ -23,7 +23,7 @@ class TimetableViewModel(private val entity: EntityRef?, repository: TimetableRe
     }
     val state: StateFlow<TimetableUiState?> = combine(repository.weeks, settings.settings, selected, minute, refreshing) { weeks, preferences, date, now, busy ->
         val ref = entity ?: preferences.home
-        if (weeks == null || ref == null) null else timetableUiState(Schedule(weeks, preferences.subGroupFilter()), preferences, ref, date, now, busy)
+        if (weeks == null || ref == null) null else timetableUiState(Schedule(weeks), preferences, ref, date, now, busy)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     fun selectDate(date: LocalDate) { selected.value = date }
     fun toggleFavourite() { val ref = state.value?.entity ?: return; viewModelScope.launch { try { settings.update { it.toggleFavourite(ref) } } catch (_: IOException) { } } }

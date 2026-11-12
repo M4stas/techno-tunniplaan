@@ -18,15 +18,32 @@ class SettingsScreenTest {
         var theme: ThemeMode? = null
         var language: String? = null
         var syncs = 0
+        var homeOpened = false
         val state = settingsUiState(Schedule(listOf(Fixtures.week1())), Settings(home = Fixtures.CLASS_A))
-        compose.setContent { AppTheme(ThemeMode.DARK) { SettingsScreen(state, {}, { _, _ -> }, { theme = it }, { language = it }, { syncs++ }) } }
-        listOf("Grupp 1", "Grupp 2", "All groups").forEach { compose.onNodeWithText(it).assertExists() }
-        compose.onNodeWithText("Dark").performScrollTo().performClick()
+        compose.setContent { AppTheme(ThemeMode.DARK) { SettingsScreen(state, { homeOpened = true }, { theme = it }, { language = it }, { syncs++ }) } }
+        compose.onNodeWithText("K-XX-24A").performClick()
+        assertTrue(homeOpened)
+        compose.onNodeWithContentDescription("Dark").performScrollTo().performClick()
         assertEquals(ThemeMode.DARK, theme)
-        compose.onNodeWithText("Eesti").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Eesti").performScrollTo().performClick()
         assertEquals("et", language)
+        compose.onNodeWithContentDescription("Light").performScrollTo().performClick()
+        assertEquals(ThemeMode.LIGHT, theme)
+        compose.onAllNodesWithContentDescription("Follow system")[0].performScrollTo().performClick()
+        assertEquals(ThemeMode.SYSTEM, theme)
+        compose.onNodeWithContentDescription("English").performScrollTo().performClick()
+        assertEquals("en", language)
+        compose.onAllNodesWithContentDescription("Follow system")[1].performScrollTo().performClick()
+        assertNull(language)
         compose.onNodeWithText("Never updated").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Update now").performScrollTo().performClick()
+        compose.onNodeWithText("Update").performScrollTo().performClick()
         assertEquals(1, syncs)
+    }
+    @Test fun syncIsDisabledWhileSyncing() {
+        var syncs = 0
+        val state = settingsUiState(Schedule(emptyList()), Settings(), syncing = true)
+        compose.setContent { AppTheme(ThemeMode.DARK) { SettingsScreen(state, {}, {}, {}, { syncs++ }) } }
+        compose.onNodeWithText("Update").performScrollTo().assertIsNotEnabled().performClick()
+        assertEquals(0, syncs)
     }
 }
