@@ -172,12 +172,12 @@ object Routes {
         }
         val route = entry?.destination?.route ?: start
         // Keeps the last tab highlighted while the island slides away for onboarding.
-        val lastTab = remember { object { var route = route } }
-        if (route != Routes.ONBOARDING) lastTab.route = route
+        var lastTab by remember { mutableStateOf(route) }
+        if (route != Routes.ONBOARDING) lastTab = route
         AnimatedVisibility(route != Routes.ONBOARDING, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp),
             enter = fadeIn(Motion.enter()) + slideInVertically(Motion.offset) { it / 2 },
             exit = fadeOut(Motion.fast()) + slideOutVertically(Motion.offset) { it / 2 }) {
-            NavIsland(lastTab.route, { target -> nav.navigate(target) { popUpTo(Routes.HOME); launchSingleTop = true } })
+            NavIsland(lastTab, { target -> nav.navigate(target) { popUpTo(Routes.HOME); launchSingleTop = true } })
         }
     }
 }
