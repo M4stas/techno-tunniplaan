@@ -103,7 +103,7 @@ object Routes {
                     })
                     val state by vm.state.collectAsStateWithLifecycle()
                     val back: (() -> Unit)? = if (entity == null) null else { { nav.popBackStack() } }
-                    state?.let { TimetableScreen(it, vm::selectDate, vm::setViewMode, vm::refresh, vm::toggleFavourite,
+                    state?.let { TimetableScreen(it, vm::selectDate, vm::refresh, vm::toggleFavourite,
                         { ref -> nav.navigate(Routes.entity(ref)) }, { nav.navigate(Routes.ONBOARDING) },
                         back) }
                 }) { nav ->

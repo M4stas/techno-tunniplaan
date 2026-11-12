@@ -13,6 +13,7 @@ import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -57,6 +58,11 @@ class SettingsTest {
         val store = SettingsStore(ReadStore(flow { throw failure }))
         val thrown = runCatching { store.settings.first() }.exceptionOrNull()
         assertSame(failure, thrown)
+    }
+
+    @Test fun settingsSavedWithAViewModeStillLoad() = runTest {
+        val stored = preferencesOf(stringPreferencesKey("settings") to """{"home":{"kind":"CLASS","key":"k-xx-24a"},"viewMode":"WEEK"}""")
+        assertEquals(Settings(home = Fixtures.CLASS_A), SettingsStore(ReadStore(flowOf(stored))).settings.first())
     }
 
     private class ReadStore(override val data: Flow<Preferences>) : DataStore<Preferences> {

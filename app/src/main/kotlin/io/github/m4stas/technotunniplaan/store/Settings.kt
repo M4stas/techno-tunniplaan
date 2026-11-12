@@ -6,14 +6,12 @@ import io.github.m4stas.technotunniplaan.schedule.SubGroupFilter
 import kotlinx.serialization.Serializable
 
 enum class ThemeMode { SYSTEM, DARK, LIGHT }
-enum class ViewMode { DAY, WEEK }
 enum class SyncError { NETWORK, FORMAT }
 @Serializable data class Settings(
     val home: EntityRef? = null,
     val favourites: List<EntityRef> = emptyList(),
     val subGroupChoices: Map<String, String> = emptyMap(),
     val theme: ThemeMode = ThemeMode.SYSTEM,
-    val viewMode: ViewMode = ViewMode.DAY,
     val lastSyncMillis: Long? = null,
     val lastSyncError: SyncError? = null,
 )
