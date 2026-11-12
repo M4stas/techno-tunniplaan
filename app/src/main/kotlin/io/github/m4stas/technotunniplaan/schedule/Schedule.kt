@@ -23,7 +23,8 @@ class Schedule(weeks: List<Timetable>, private val filter: SubGroupFilter? = nul
     fun splitsFor(classKey: String): List<Split> = weeks.flatMap { it.splits }
         .filter { it.classKey == classKey }.distinctBy { it.id }
     fun schoolDays(): List<LocalDate> = weeks.flatMap { week ->
-        (0..if (week.hasSaturday) 5 else 4).map { week.monday.plusDays(it.toLong()) }
+        // The school has no Saturday, so Saturday lessons are never shown.
+        (0..4).map { week.monday.plusDays(it.toLong()) }
     }.distinct().sorted()
     fun initialDate(today: LocalDate): LocalDate? = schoolDays().let { days ->
         days.firstOrNull { it >= today } ?: days.lastOrNull()

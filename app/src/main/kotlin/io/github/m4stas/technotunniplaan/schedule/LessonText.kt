@@ -16,6 +16,6 @@ fun lessonText(lesson: Lesson, viewer: EntityRef): LessonText {
     )
 }
 fun Timetable.title(): String {
-    val end = monday.plusDays(if (hasSaturday) 5 else 4)
+    val end = monday.plusDays(4)
     return "$name · ${monday.dayOfMonth}.${monday.monthValue}–${end.dayOfMonth}.${end.monthValue}"
 }
