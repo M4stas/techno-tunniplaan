@@ -59,4 +59,9 @@
         <item>on Monday</item><item>on Tuesday</item><item>on Wednesday</item><item>on Thursday</item><item>on Friday</item><item>on Saturday</item><item>on Sunday</item>
     </string-array>
 
+    <string name="kind_class">Class</string>
+    <string name="kind_teacher">Teacher</string>
+    <string name="kind_room">Room</string>
+    <string name="detail_teacher_room">Teacher · room</string>
+    <string name="time_range" translatable="false">%1$s – %2$s</string>
 </resources>

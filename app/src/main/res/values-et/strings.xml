@@ -59,4 +59,8 @@
         <item>esmaspäeval</item><item>teisipäeval</item><item>kolmapäeval</item><item>neljapäeval</item><item>reedel</item><item>laupäeval</item><item>pühapäeval</item>
     </string-array>
 
+    <string name="kind_class">Klass</string>
+    <string name="kind_teacher">Õpetaja</string>
+    <string name="kind_room">Ruum</string>
+    <string name="detail_teacher_room">Õpetaja · ruum</string>
 </resources>

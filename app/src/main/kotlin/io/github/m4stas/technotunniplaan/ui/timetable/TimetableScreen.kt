@@ -28,7 +28,10 @@ private const val SEPARATOR = " · "
     val p = LocalPalette.current
     val locale = LocalConfiguration.current.locales[0]
     var openSlot by remember { mutableStateOf<SlotUi?>(null) }
-    openSlot?.let { LessonDetailSheet(it.lines.first().lesson, { openSlot = null }, onOpenEntity) }
+    openSlot?.let { slot ->
+        val day = state.selectedDate?.let { dayTitle(it, locale) }.orEmpty()
+        LessonDetailSheet(slot, listOf(day, state.title).filter { it.isNotEmpty() }.joinToString(SEPARATOR), state.entity, { openSlot = null }, onOpenEntity)
+    }
     val date = state.selectedDate
     val monday = date?.with(DayOfWeek.MONDAY)
     val weekDays = state.days.map { it.date }.filter { it.with(DayOfWeek.MONDAY) == monday }

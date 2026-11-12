@@ -22,7 +22,11 @@ class LessonSheetTest {
         compose.onNodeWithTag("lesson-details").assertDoesNotExist()
         compose.onAllNodesWithText("Matemaatika").onFirst().performClick()
         compose.onNodeWithTag("lesson-details").assertExists()
-        compose.onNode(hasText("Mari Näidis") and hasAnyAncestor(hasTestTag("lesson-details"))).performClick()
+        compose.onNodeWithText("Monday · K-XX-24A").assertExists()
+        compose.onNodeWithText("08:30 – 10:00").assertExists()
+        compose.onNode(hasText("X-101") and hasAnyAncestor(hasTestTag("lesson-details"))).assertExists()
+        compose.onNode(hasText("TEACHER · ROOM") and hasAnyAncestor(hasTestTag("lesson-details"))).assertExists()
+        compose.onNode(hasText("Mari Näidis · X-101") and hasAnyAncestor(hasTestTag("lesson-details"))).performClick()
         assertEquals(Fixtures.MARI, opened)
         compose.onNodeWithTag("lesson-details").assertDoesNotExist()
     }
