@@ -2,6 +2,7 @@ package io.github.m4stas.technotunniplaan
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +23,12 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         savePending(outState, openEntity)
+    }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // AppCompat applies a theme or language picked in the app by calling this method alone, without telling the
+        // views. Passing the change on lets Compose redraw with the new strings and night mode.
+        window.decorView.dispatchConfigurationChanged(newConfig)
     }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
