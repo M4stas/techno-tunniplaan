@@ -34,6 +34,7 @@
     <string name="save">Save</string>
     <string name="language_et">Eesti</string>
     <string name="language_en">English</string>
+    <string name="language_ru">Русский</string>
     <string name="break_short">%1$d min break</string>
     <string name="break_lunch">%1$d min lunch</string>
     <string name="break_free">%1$d min free</string>
@@ -63,4 +64,5 @@
     <string name="last_synced_yesterday">Updated yesterday %1$s</string>
     <string name="language_et_short" translatable="false">ET</string>
     <string name="language_en_short" translatable="false">EN</string>
+    <string name="language_ru_short" translatable="false">RU</string>
 </resources>
