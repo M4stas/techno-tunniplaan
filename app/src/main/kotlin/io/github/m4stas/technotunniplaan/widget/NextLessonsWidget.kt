@@ -21,7 +21,6 @@ import io.github.m4stas.technotunniplaan.schedule.*
 import io.github.m4stas.technotunniplaan.store.Settings
 import java.io.IOException
 import java.time.LocalDateTime
-import java.time.format.TextStyle as DayTextStyle
 
 private val kindKey = stringPreferencesKey("entity_kind")
 private val entityKey = stringPreferencesKey("entity_key")
@@ -53,43 +52,21 @@ class NextLessonsWidget : GlanceAppWidget() {
             val config = currentState<Preferences>().toWidgetConfig()
             val entity = config.resolve(settings)
             val colors = widgetColors(settings.theme)
-            val widthDp = LocalSize.current.width.value.toInt()
-            val heightDp = LocalSize.current.height.value.toInt()
-            val rowHeight = widgetRowHeight(widthDp, heightDp)
             val content = widgetContent(weeks?.let { Schedule(it) }, entity,
-                LocalDateTime.now(container.clock), minOf(config.count, rowsThatFit(heightDp, widthDp)))
+                LocalDateTime.now(container.clock), config.count)
             Column(GlanceModifier.fillMaxSize().background(colors.widgetBackground).cornerRadius(24.dp)
                 .clickable(actionStartActivity(MainActivity.intentFor(context, entity)))
-                .padding(horizontal = 8.dp, vertical = widgetVerticalPadding(heightDp).dp)) {
+                .padding(horizontal = 8.dp, vertical = 8.dp)) {
                 when (content) {
                     WidgetContent.NoData -> Text(context.getString(R.string.widget_open_app), style = TextStyle(color = colors.text))
                     WidgetContent.NoLessons -> Text(context.getString(R.string.widget_no_lessons), style = TextStyle(color = colors.text))
-                    is WidgetContent.Lessons -> content.rows.forEach { row ->
-                        val time = listOfNotNull(row.day?.getDisplayName(DayTextStyle.SHORT, context.resources.configuration.locales[0]), row.text.time).joinToString(" ")
-                        if (widthDp < 240) {
-                            Column(GlanceModifier.fillMaxWidth().height(rowHeight.dp)) {
-                                Text(time, style = TextStyle(color = colors.accentText, fontSize = 14.sp, fontWeight = FontWeight.Bold), maxLines = if (rowHeight == 80) 2 else 1)
-                                if (rowHeight == 80) LessonDetails(row, colors)
-                                else Text(row.text.title, style = TextStyle(color = colors.text, fontWeight = FontWeight.Bold), maxLines = 1)
-                            }
-                        } else {
-                            Row(GlanceModifier.fillMaxWidth().height(rowHeight.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Text(time,
-                                    modifier = GlanceModifier.width(116.dp), style = androidx.glance.text.TextStyle(color = colors.accentText, fontSize = 18.sp, fontWeight = FontWeight.Bold), maxLines = if (rowHeight < 44) 1 else 2)
-                                Column(GlanceModifier.defaultWeight()) {
-                                    LessonDetails(row, colors)
-                                }
-                            }
-                        }
+                    is WidgetContent.Lessons -> content.lessons.forEach { lesson ->
+                        Text(listOf(lesson.text.time, lesson.text.title, lesson.text.place, lesson.text.who)
+                            .filter { it.isNotBlank() }.joinToString(" · "),
+                            style = TextStyle(color = colors.text), maxLines = 1)
                     }
                 }
             }
         }
     }
-}
-
-@androidx.compose.runtime.Composable
-private fun LessonDetails(row: WidgetRow, colors: WidgetColors) {
-    Text(row.text.title, style = TextStyle(color = colors.text, fontWeight = FontWeight.Bold), maxLines = 1)
-    Text(listOf(row.text.place, row.text.who).filter { it.isNotBlank() }.joinToString(" · "), style = TextStyle(color = colors.textSecondary, fontSize = 12.sp), maxLines = 1)
 }

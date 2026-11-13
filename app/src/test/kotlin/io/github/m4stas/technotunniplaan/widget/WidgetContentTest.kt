@@ -7,7 +7,7 @@ import io.github.m4stas.technotunniplaan.schedule.LessonText
 import io.github.m4stas.technotunniplaan.schedule.Schedule
 import io.github.m4stas.technotunniplaan.schedule.DatedLesson
 import io.github.m4stas.technotunniplaan.store.Settings
-import java.time.DayOfWeek
+import io.github.m4stas.technotunniplaan.ui.timetable.*
 import java.time.LocalTime
 import org.junit.Assert.*
 import org.junit.Test
@@ -18,16 +18,21 @@ class WidgetContentTest {
 
     @Test fun rendersLessonsForViewerAndDay() {
         val c = widgetContent(s, CLASS_A, mon.atTime(9, 0), 2) as WidgetContent.Lessons
-        assertEquals(listOf(null, null), c.rows.map { it.day })
-        assertEquals(LessonText("08:30–10:00", "Matemaatika", "101", "Mari Näidis", null), c.rows[0].text)
+        assertEquals(SlotStatus.CURRENT, c.lessons[0].status)
+        assertEquals(1f / 3, c.lessons[0].progress, 0.001f)
+        assertEquals(SlotStatus.UPCOMING, c.lessons[1].status)
+        assertEquals(breakBetween(LocalTime.of(10, 0), c.lessons[1].start), c.lessons[1].breakBefore)
+        assertTrue(c.lessons.none { it.newDay })
+        assertEquals(s.find(CLASS_A)!!.name, c.entityName)
+        assertEquals(LessonText("08:30–10:00", "Matemaatika", "101", "Mari Näidis", null), c.lessons[0].text)
         val next = widgetContent(s, CLASS_A, mon.atTime(11, 0), 1) as WidgetContent.Lessons
-        assertEquals(DayOfWeek.TUESDAY, next.rows.single().day)
-        assertEquals("K-XX-24A", (widgetContent(s, MARI, mon.atTime(9, 0), 1) as WidgetContent.Lessons).rows[0].text.who)
+        assertEquals(mon.plusDays(1), next.lessons.single().date)
+        assertEquals("K-XX-24A", (widgetContent(s, MARI, mon.atTime(9, 0), 1) as WidgetContent.Lessons).lessons[0].text.who)
     }
 
     @Test fun clampsCountAndHandlesEmptyStates() {
-        assertEquals(5, (widgetContent(s, CLASS_A, mon.atTime(0, 0), 9) as WidgetContent.Lessons).rows.size)
-        assertEquals(1, (widgetContent(s, CLASS_A, mon.atTime(0, 0), 0) as WidgetContent.Lessons).rows.size)
+        assertEquals(5, (widgetContent(s, CLASS_A, mon.atTime(0, 0), 9) as WidgetContent.Lessons).lessons.size)
+        assertEquals(1, (widgetContent(s, CLASS_A, mon.atTime(0, 0), 0) as WidgetContent.Lessons).lessons.size)
         assertEquals(WidgetContent.NoLessons, widgetContent(s, CLASS_A, mon.plusDays(4).atTime(14, 15), 3))
         assertEquals(WidgetContent.NoData, widgetContent(null, CLASS_A, mon.atTime(9, 0), 1))
         assertEquals(WidgetContent.NoData, widgetContent(Schedule(emptyList()), CLASS_A, mon.atTime(9, 0), 1))
@@ -35,13 +40,12 @@ class WidgetContentTest {
     }
 
     @Test fun redrawsAtLessonEndOrMidnight() {
-        assertEquals(mon.atTime(10, 0), nextRedrawAt(s.nextLessons(CLASS_A, mon.atTime(9, 0), 2), mon.atTime(9, 0)))
+        assertEquals(mon.atTime(9, 5), nextRedrawAt(s.nextLessons(CLASS_A, mon.atTime(9, 0), 2), mon.atTime(9, 0)))
         assertEquals(mon.plusDays(1).atStartOfDay(), nextRedrawAt(s.nextLessons(CLASS_A, mon.atTime(11, 0), 1), mon.atTime(11, 0)))
         assertNull(nextRedrawAt(emptyList(), mon.atTime(9, 0)))
     }
 
-    @Test fun fitsRowsAndResolvesEntity() {
-        assertEquals(listOf(1, 2, 3, 5, 5), listOf(96, 110, 180, 250, 1000).map { rowsThatFit(it, 300) })
+    @Test fun resolvesEntity() {
         assertEquals(CLASS_A, WidgetConfig().resolve(Settings(home = CLASS_A)))
         assertEquals(MARI, WidgetConfig(MARI).resolve(Settings(home = CLASS_A)))
     }
@@ -54,29 +58,34 @@ class WidgetContentTest {
         assertEquals(mon.atTime(9, 15), nextRedrawAt(listOf(short, long), mon.atTime(9, 14)))
     }
 
-    @Test fun countsTallerRowsAtNarrowWidths() {
-        for (width in listOf(110, 160, 239)) {
-            assertEquals(80, widgetRowHeight(width, 96))
-            assertEquals(listOf(1, 1, 2, 4, 5), listOf(96, 175, 176, 415, 416).map { rowsThatFit(it, width) })
-        }
-        for (width in listOf(240, 300, 600)) {
-            assertEquals(44, widgetRowHeight(width, 60))
-            assertEquals(listOf(1, 1, 2, 4, 5), listOf(60, 103, 104, 235, 236).map { rowsThatFit(it, width) })
-        }
+    @Test fun layoutThresholds() {
+        assertEquals(listOf(WidgetLayout.SINGLE, WidgetLayout.NOW_NEXT, WidgetLayout.NOW_NEXT, WidgetLayout.TIMELINE), listOf(99, 100, 229, 230).map(::widgetLayout))
+        assertTrue(isNarrowWidget(239))
+        assertFalse(isNarrowWidget(240))
     }
 
-    @Test fun fitsOneCellWidgetsInBothOrientations() {
-        assertEquals(80, widgetRowHeight(130, 102))
-        assertEquals(1, rowsThatFit(102, 130))
-        for (width in listOf(110, 130, 240, 300)) {
-            assertEquals(44, widgetRowHeight(width, 51))
-            assertEquals(1, rowsThatFit(51, width))
-            assertEquals(40, widgetRowHeight(width, 40))
-            assertEquals(1, rowsThatFit(40, width))
-            for (height in listOf(40, 51, 59, 60, 95, 96, 102, 176, 416)) {
-                assertTrue(rowsThatFit(height, width) * widgetRowHeight(width, height) +
-                    2 * widgetVerticalPadding(height) <= height)
-            }
-        }
+    @Test fun overlapsAndDayChanges() {
+        val lessons = (widgetContent(s, CLASS_A, mon.atTime(10, 30), 4) as WidgetContent.Lessons).lessons
+        assertNull(lessons[1].breakBefore)
+        assertTrue(lessons[2].newDay)
+        assertNull(lessons[2].breakBefore)
+    }
+
+    @Test fun timelineFitsLabelsAndRows() {
+        val first = (widgetContent(s, CLASS_A, mon.atTime(9, 0), 1) as WidgetContent.Lessons).lessons.single()
+        val gap = first.copy(breakBefore = breakBetween(LocalTime.of(10, 0), LocalTime.of(10, 15)))
+        val lessons = listOf(first, gap, first)
+        assertEquals(2, timelineRowsThatFit(164, lessons))
+        assertEquals(2, timelineRowsThatFit(209, lessons))
+        assertEquals(1, timelineRowsThatFit(169, listOf(first, first.copy(newDay = true))))
+        assertEquals(2, timelineRowsThatFit(170, listOf(first, first.copy(newDay = true))))
+        assertEquals(1, timelineRowsThatFit(0, lessons))
+        assertEquals(3, timelineRowsThatFit(1000, lessons))
+        assertEquals(0, timelineRowsThatFit(1000, emptyList()))
+    }
+
+    @Test fun redrawsAtNearerEnd() {
+        val now = mon.atTime(9, 57)
+        assertEquals(mon.atTime(10, 0), nextRedrawAt(s.nextLessons(CLASS_A, now, 2), now))
     }
 }
