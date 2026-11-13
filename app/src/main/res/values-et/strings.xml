@@ -61,4 +61,7 @@
     <string name="sync_short">Uuenda</string>
     <string name="last_synced_today">Uuendatud täna %1$s</string>
     <string name="last_synced_yesterday">Uuendatud eile %1$s</string>
+    <string name="widget_until">kuni %1$s</string>
+    <string name="widget_ends">lõpp</string>
+    <string name="widget_starts">algus</string>
 </resources>

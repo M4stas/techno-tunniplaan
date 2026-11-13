@@ -65,4 +65,7 @@
     <string name="language_et_short" translatable="false">ET</string>
     <string name="language_en_short" translatable="false">EN</string>
     <string name="language_ru_short" translatable="false">RU</string>
+    <string name="widget_until">until %1$s</string>
+    <string name="widget_ends">ends</string>
+    <string name="widget_starts">starts</string>
 </resources>
