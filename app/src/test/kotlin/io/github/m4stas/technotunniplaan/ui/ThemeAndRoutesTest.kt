@@ -16,7 +16,7 @@ class ThemeAndRoutesTest {
         assertEquals("entity/TEACHER/mari%20n%C3%A4idis", Routes.entity(Fixtures.MARI))
     }
 
-    private fun Palette.all() = setOf(onIslandStrong, backgroundClear, divider, background, surface, card, cardOutline, currentCard, currentOutline, accentTint, accent, onAccent,
+    private fun Palette.all() = setOf(onIslandStrong, backgroundClear, divider, background, surface, card, cardOutline, widgetBackground, widgetCard, widgetCurrentCard, currentCard, currentOutline, accentTint, accent, onAccent,
         accentText, accentTextSecondary, text, textSecondary, textMuted, textFaint, ghost, island, onIsland, track, selected, onSelected,
         selectedRow, sheet, outline, error)
 
@@ -44,7 +44,15 @@ class ThemeAndRoutesTest {
         assertEquals(Color(0xFF1B1B1B), DarkPalette.island)
         assertEquals(Color(0xFFF6F6F3), LightPalette.background)
         assertEquals(Color(0xFF4D6100), LightPalette.accentText)
-        assertEquals(Color(0xFFE6FF86), LightPalette.accentTint)
+        assertEquals(Color(0xFFE3F59A), LightPalette.accentTint)
+        assertEquals(Color(0xFF121212), DarkPalette.widgetBackground)
+        assertEquals(Color(0xFF1B1B1B), DarkPalette.widgetCard)
+        assertEquals(Color(0xFF1B1B1B), DarkPalette.widgetCurrentCard)
+        assertEquals(Color(0xFFF6F6F3), LightPalette.widgetBackground)
+        assertEquals(Color(0xFFFFFFFF), LightPalette.widgetCard)
+        assertEquals(Color(0xFFF4FBD6), LightPalette.widgetCurrentCard)
+        assertEquals(Color(0xFFF4FBD6), LightPalette.currentCard)
+        assertEquals(Color(0xFFD9EC8A), LightPalette.currentOutline)
         assertEquals(Color(0xFF111111), LightPalette.island)
         assertEquals(DarkPalette.accent, LightPalette.accent)
     }
