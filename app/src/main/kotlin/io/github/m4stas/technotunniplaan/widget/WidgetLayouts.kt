@@ -26,6 +26,8 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
     val context = LocalContext.current
     val current = lesson.status == SlotStatus.CURRENT
     val compact = single && isCompactWidget(LocalSize.current.height.value.toInt())
+    val title = lesson.entries.map { it.title }.distinct().joinToString(" / ")
+    val stacked = lesson.entries.size > 1 && !single && !large
     val column = !narrow && !large && !single
     val width = LocalSize.current.width.value - outer * 2 - if (column) 48 else 0
     val shape = if (single || large) R.drawable.widget_card_18 else R.drawable.widget_card_16
@@ -44,26 +46,26 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
                     vertical = (if (large) 12 else 0).dp), verticalAlignment = Alignment.CenterVertically) {
                     val clock = if (current) context.getString(R.string.widget_until, lesson.end.format(timeFormat)) else lesson.start.format(timeFormat)
                     if (compact) {
-                        Label("${lesson.text.title} · $clock", 12, if (current) colors.accentText else colors.text)
+                        Label("$title · $clock", 12, if (current) colors.accentText else colors.text)
                     } else {
                         if (single && !narrow) TimeColumn(lesson, colors, current)
                         Column(GlanceModifier.defaultWeight().fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
-                            val parallel = lesson.entries.size > 1
                             val titleColor = if (current) colors.accentText else colors.text
                             val detailSize = if (single || large) 12 else 11
                             val detailColor = if (large || current) colors.textSecondary else colors.textMuted
-                            val title = lesson.entries.map { it.title }.distinct().joinToString(" / ")
-                            if (parallel && narrow && !large) {
+                            if (stacked && narrow) {
                                 Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                    Column(GlanceModifier.defaultWeight()) { Label(title, if (single) 15 else 14, titleColor) }
+                                    Column(GlanceModifier.defaultWeight()) { Label(title, 14, titleColor) }
                                     Label(clock, detailSize, detailColor)
                                 }
                             } else Label(title, if (large) 16 else if (single) 15 else 14, titleColor, large)
-                            if (parallel) EntryRows(lesson.entries, colors, detailSize, detailColor, titleColor)
+                            if (stacked) EntryRows(lesson.entries, colors, detailSize, detailColor, titleColor)
                             else {
+                                val who = lesson.entries.map { it.who.trim() }.filter { it.isNotBlank() }.distinct().joinToString(", ")
+                                val places = lesson.entries.map { it.place.trim() }.filter { it.isNotBlank() }.distinct().joinToString(", ")
                                 val details = if (narrow && !large) {
-                                    (if (single) listOf(lesson.text.place, clock) else listOf(clock, lesson.text.place))
-                                } else if (narrow) listOf(lesson.text.place) else listOf(lesson.text.who, lesson.text.place)
+                                    (if (single) listOf(places, clock) else listOf(clock, places))
+                                } else if (narrow) listOf(places) else listOf(who, places)
                                 Label(details.map { it.trim() }.filter { it.isNotBlank() }.joinToString(" · "), detailSize, detailColor)
                             }
                             if (large) {
@@ -93,7 +95,7 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
     entries.forEachIndexed { index, entry ->
         if (index > 0) Spacer(GlanceModifier.fillMaxWidth().height(1.dp).background(colors.cardOutline))
         Row(GlanceModifier.fillMaxWidth().height(23.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(GlanceModifier.defaultWeight()) { Label(entry.who.ifBlank { entry.title }, size, whoColor) }
+            Column(GlanceModifier.defaultWeight()) { Label(entry.who, size, whoColor) }
             if (entry.place.isNotBlank()) { Spacer(GlanceModifier.width(8.dp)); Label(entry.place, size, placeColor) }
         }
     }
@@ -145,7 +147,7 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
                     val places = second.entries.map { it.place }.filter { it.isNotBlank() }.distinct().joinToString(", ")
                     val who = second.entries.map { it.who }.filter { it.isNotBlank() }.distinct().joinToString(", ")
                     Column(GlanceModifier.defaultWeight()) { Label(second.entries.map { it.title }.distinct().joinToString(" / "), 13, colors.text) }
-                    if (!narrow) Label(if (LocalSize.current.width.value >= 330) listOf(who, places).filter { it.isNotBlank() }.joinToString(" · ") else places, 12, colors.textMuted)
+                    if (!narrow) Label(if (second.entries.size == 1 && LocalSize.current.width.value >= 330) listOf(who, places).filter { it.isNotBlank() }.joinToString(" · ") else places, 12, colors.textMuted)
                 }
             }
         }
