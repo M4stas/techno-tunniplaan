@@ -61,4 +61,7 @@
     <string name="sync_short">Обновить</string>
     <string name="last_synced_today">Обновлено сегодня в %1$s</string>
     <string name="last_synced_yesterday">Обновлено вчера в %1$s</string>
+    <string name="widget_until">до %1$s</string>
+    <string name="widget_ends">конец</string>
+    <string name="widget_starts">начало</string>
 </resources>

@@ -3,17 +3,13 @@ package io.github.m4stas.technotunniplaan.widget
 import android.content.Context
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.*
 import androidx.glance.*
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.*
 import androidx.glance.appwidget.action.actionStartActivity
-import androidx.glance.appwidget.cornerRadius
 import androidx.glance.layout.*
 import androidx.glance.state.PreferencesGlanceStateDefinition
-import androidx.glance.text.*
 import io.github.m4stas.technotunniplaan.App
 import io.github.m4stas.technotunniplaan.MainActivity
 import io.github.m4stas.technotunniplaan.R
@@ -54,16 +50,20 @@ class NextLessonsWidget : GlanceAppWidget() {
             val colors = widgetColors(settings.theme)
             val content = widgetContent(weeks?.let { Schedule(it) }, entity,
                 LocalDateTime.now(container.clock), config.count)
-            Column(GlanceModifier.fillMaxSize().background(colors.widgetBackground).cornerRadius(24.dp)
-                .clickable(actionStartActivity(MainActivity.intentFor(context, entity)))
-                .padding(horizontal = 8.dp, vertical = 8.dp)) {
+            val size = LocalSize.current
+            val layout = widgetLayout(size.height.value.toInt())
+            val narrow = isNarrowWidget(size.width.value.toInt())
+            Box(GlanceModifier.fillMaxSize().background(ImageProvider(R.drawable.widget_background_24),
+                colorFilter = ColorFilter.tint(colors.widgetBackground))
+                .clickable(actionStartActivity(MainActivity.intentFor(context, entity)))) {
                 when (content) {
-                    WidgetContent.NoData -> Text(context.getString(R.string.widget_open_app), style = TextStyle(color = colors.text))
-                    WidgetContent.NoLessons -> Text(context.getString(R.string.widget_no_lessons), style = TextStyle(color = colors.text))
-                    is WidgetContent.Lessons -> content.lessons.forEach { lesson ->
-                        Text(listOf(lesson.text.time, lesson.text.title, lesson.text.place, lesson.text.who)
-                            .filter { it.isNotBlank() }.joinToString(" · "),
-                            style = TextStyle(color = colors.text), maxLines = 1)
+                    WidgetContent.NoData -> WidgetNoData(colors, layout == WidgetLayout.SINGLE)
+                    WidgetContent.NoLessons -> WidgetEmpty(colors, layout == WidgetLayout.SINGLE)
+                    is WidgetContent.Lessons -> when (layout) {
+                        WidgetLayout.SINGLE -> WidgetSingle(content.lessons, colors, narrow)
+                        WidgetLayout.NOW_NEXT -> WidgetNowNext(content.lessons, colors, narrow)
+                        WidgetLayout.TIMELINE -> WidgetTimeline(content.entityName,
+                            content.lessons.take(timelineRowsThatFit(size.height.value.toInt(), content.lessons)), colors, narrow)
                     }
                 }
             }
