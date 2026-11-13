@@ -64,6 +64,13 @@ class WidgetContentTest {
         assertFalse(isNarrowWidget(240))
     }
 
+    @Test fun compactPresentationBelowSeventyDp() {
+        assertTrue(isCompactWidget(40))
+        assertTrue(isCompactWidget(69))
+        assertFalse(isCompactWidget(70))
+        assertFalse(isCompactWidget(118))
+    }
+
     @Test fun overlapsAndDayChanges() {
         val lessons = (widgetContent(s, CLASS_A, mon.atTime(10, 30), 4) as WidgetContent.Lessons).lessons
         assertNull(lessons[1].breakBefore)

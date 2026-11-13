@@ -20,6 +20,7 @@ fun widgetLayout(heightDp: Int): WidgetLayout = when {
     else -> WidgetLayout.TIMELINE
 }
 fun isNarrowWidget(widthDp: Int): Boolean = widthDp < 240
+fun isCompactWidget(heightDp: Int): Boolean = heightDp < 70
 
 data class WidgetLesson(
     val date: LocalDate, val start: LocalTime, val end: LocalTime, val text: LessonText,

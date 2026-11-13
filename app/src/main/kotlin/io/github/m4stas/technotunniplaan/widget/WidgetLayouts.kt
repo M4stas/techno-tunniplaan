@@ -24,6 +24,7 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
     height: Float, outer: Int, large: Boolean = false, single: Boolean = false) {
     val context = LocalContext.current
     val current = lesson.status == SlotStatus.CURRENT
+    val compact = single && isCompactWidget(LocalSize.current.height.value.toInt())
     val column = !narrow && !large && !single
     val width = LocalSize.current.width.value - outer * 2 - if (column) 48 else 0
     val shape = if (single || large) R.drawable.widget_card_18 else R.drawable.widget_card_16
@@ -40,30 +41,34 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
                 if (current && elapsed >= 1) Spacer(GlanceModifier.width(elapsed.dp).fillMaxHeight().shape(fill, colors.accentTint))
                 Row(GlanceModifier.fillMaxSize().padding(horizontal = (if (large || single) 14 else 12).dp,
                     vertical = (if (large) 12 else 0).dp), verticalAlignment = Alignment.CenterVertically) {
-                if (single && !narrow) TimeColumn(lesson, colors, current)
-                Column(GlanceModifier.defaultWeight().fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
-                    Label(lesson.text.title, if (large) 16 else if (single) 15 else 14,
-                        if (current) colors.accentText else colors.text, large)
                     val clock = if (current) context.getString(R.string.widget_until, lesson.end.format(timeFormat)) else lesson.start.format(timeFormat)
-                    val details = if (narrow && !large) {
-                        (if (single) listOf(lesson.text.place, clock) else listOf(clock, lesson.text.place))
-                    } else if (narrow) listOf(lesson.text.place) else listOf(lesson.text.who, lesson.text.place)
-                    Label(details.map { it.trim() }.filter { it.isNotBlank() }.joinToString(" · "), if (single || large) 12 else 11,
-                        if (large || current) colors.textSecondary else colors.textMuted)
-                    if (large) {
-                        Spacer(GlanceModifier.defaultWeight())
-                        Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-                            Label(if (narrow) (if (current) lesson.end else lesson.start).format(timeFormat)
-                                else lesson.start.format(timeFormat), 22, if (current) colors.accentText else colors.textSecondary, true)
-                            Label(if (narrow) " " + context.getString(if (current) R.string.widget_ends else R.string.widget_starts)
-                                else " – " + lesson.end.format(timeFormat), 12, if (current) colors.accentTextSecondary else colors.textSecondary)
-                            if (LocalSize.current.width.value >= 330) {
+                    if (compact) {
+                        Label("${lesson.text.title} · $clock", 12, if (current) colors.accentText else colors.text)
+                    } else {
+                        if (single && !narrow) TimeColumn(lesson, colors, current)
+                        Column(GlanceModifier.defaultWeight().fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
+                            Label(lesson.text.title, if (large) 16 else if (single) 15 else 14,
+                                if (current) colors.accentText else colors.text, large)
+                            val details = if (narrow && !large) {
+                                (if (single) listOf(lesson.text.place, clock) else listOf(clock, lesson.text.place))
+                            } else if (narrow) listOf(lesson.text.place) else listOf(lesson.text.who, lesson.text.place)
+                            Label(details.map { it.trim() }.filter { it.isNotBlank() }.joinToString(" · "), if (single || large) 12 else 11,
+                                if (large || current) colors.textSecondary else colors.textMuted)
+                            if (large) {
                                 Spacer(GlanceModifier.defaultWeight())
-                                Label(dayTitle(lesson.date, context.resources.configuration.locales[0]), 12, colors.textSecondary)
+                                Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+                                    Label(if (narrow) (if (current) lesson.end else lesson.start).format(timeFormat)
+                                        else lesson.start.format(timeFormat), 22, if (current) colors.accentText else colors.textSecondary, true)
+                                    Label(if (narrow) " " + context.getString(if (current) R.string.widget_ends else R.string.widget_starts)
+                                        else " – " + lesson.end.format(timeFormat), 12, if (current) colors.accentTextSecondary else colors.textSecondary)
+                                    if (LocalSize.current.width.value >= 330) {
+                                        Spacer(GlanceModifier.defaultWeight())
+                                        Label(dayTitle(lesson.date, context.resources.configuration.locales[0]), 12, colors.textSecondary)
+                                    }
+                                }
                             }
                         }
                     }
-                }
                 }
             }
         }
@@ -137,8 +142,9 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
 
 @Composable internal fun WidgetEmpty(colors: WidgetColors, single: Boolean) {
     val context = LocalContext.current
+    val compact = isCompactWidget(LocalSize.current.height.value.toInt())
     Column(GlanceModifier.fillMaxSize().padding((if (single) 8 else 12).dp), verticalAlignment = Alignment.CenterVertically, horizontalAlignment = Alignment.CenterHorizontally) {
-        Label(context.getString(R.string.free_day), if (single) 36 else 44, colors.ghost, true)
+        if (!compact) Label(context.getString(R.string.free_day), if (single) 36 else 44, colors.ghost, true)
         Label(context.getString(R.string.widget_no_lessons), 14, colors.text)
     }
 }
