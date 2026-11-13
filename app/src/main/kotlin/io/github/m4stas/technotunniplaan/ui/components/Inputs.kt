@@ -1,7 +1,15 @@
 package io.github.m4stas.technotunniplaan.ui.components
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.Animatable
+import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.unit.Constraints
+import kotlin.math.roundToInt
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import io.github.m4stas.technotunniplaan.ui.theme.Motion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,7 +22,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,26 +58,67 @@ import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
 /** One choice of a [Segmented] control. A [description] replaces a shortened [label] for accessibility services. */
 data class SegmentOption<out T>(val value: T, val label: String, val description: String? = null)
 
-/** A pill track with one active pill. Full width by default. [compact] sizes it to its labels, for use inside a row. */
+/**
+ * A pill track with one active pill. Full width by default. [compact] sizes it to its labels, for use inside a row.
+ * The active pill slides between choices, and each label takes the active colour as the pill covers it, as the
+ * navigation and day islands do.
+ */
 @Composable fun <T> Segmented(options: List<SegmentOption<T>>, selected: T, onSelect: (T) -> Unit, modifier: Modifier = Modifier, compact: Boolean = false, dense: Boolean = false) {
     val p = LocalPalette.current
-    Row(modifier.clip(CircleShape).background(p.track).padding(if (dense) 3.dp else 4.dp).selectableGroup(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-        options.forEach { option ->
-            val active = option.value == selected
-            val described = option.description
-            val activeFill = if (dense) p.segmentActive else p.selected
-            val activeInk = if (dense) p.onSegmentActive else p.onSelected
-            val fill by animateColorAsState(if (active) activeFill else p.track, Motion.fast(), label = "segment-fill")
-            val ink by animateColorAsState(if (active) activeInk else p.textSecondary, Motion.fast(), label = "segment-ink")
-            Box((if (compact || dense) Modifier else Modifier.weight(1f))
-                .heightIn(min = if (dense) 36.dp else if (compact) 40.dp else 44.dp).clip(CircleShape).background(fill)
-                .selectable(active, role = Role.RadioButton, onClick = { onSelect(option.value) })
-                .then(if (described != null) Modifier.semantics { contentDescription = described } else Modifier)
-                .padding(horizontal = if (dense) 10.dp else if (compact) 14.dp else 8.dp), contentAlignment = Alignment.Center) {
-                Text(option.label, if (described != null) Modifier.clearAndSetSemantics { } else Modifier,
-                    color = ink, fontSize = if (dense) 12.sp else 13.sp,
-                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium, maxLines = 1)
+    val activeFill = if (dense) p.segmentActive else p.selected
+    val activeInk = if (dense) p.onSegmentActive else p.onSelected
+    val selectedIndex = options.indexOfFirst { it.value == selected }
+    // Each choice's left edge and width in pixels, measured inside the track's padding.
+    val bounds = remember { mutableStateMapOf<Int, Pair<Float, Float>>() }
+    val left = remember { Animatable(0f) }
+    val width = remember { Animatable(0f) }
+    var placed by remember { mutableStateOf(false) }
+    val target = bounds[selectedIndex]
+    LaunchedEffect(selectedIndex, target) {
+        if (target == null) return@LaunchedEffect
+        if (!placed) {
+            left.snapTo(target.first)
+            width.snapTo(target.second)
+            placed = true
+        } else coroutineScope {
+            launch { left.animateTo(target.first, Motion.medium()) }
+            launch { width.animateTo(target.second, Motion.medium()) }
+        }
+    }
+    Box(modifier.clip(CircleShape).background(p.track).padding(if (dense) 3.dp else 4.dp).selectableGroup()) {
+        if (selectedIndex >= 0) Box(Modifier.matchParentSize()) {
+            Box(Modifier.layout { measurable, constraints ->
+                val w = if (placed) width.value.roundToInt().coerceAtLeast(0) else 0
+                val placeable = measurable.measure(Constraints.fixed(w, constraints.maxHeight))
+                layout(w, constraints.maxHeight) { placeable.place(left.value.roundToInt(), 0) }
+            }.testTag("segment-indicator").clip(CircleShape).background(activeFill))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            options.forEachIndexed { index, option ->
+                val active = index == selectedIndex
+                val described = option.description
+                val cover = coverage(bounds[index], placed, active, left.value, width.value)
+                Box((if (compact || dense) Modifier else Modifier.weight(1f))
+                    .heightIn(min = if (dense) 36.dp else if (compact) 40.dp else 44.dp)
+                    .onPlaced { bounds[index] = it.positionInParent().x to it.size.width.toFloat() }
+                    .clip(CircleShape)
+                    .selectable(active, role = Role.RadioButton, onClick = { onSelect(option.value) })
+                    .then(if (described != null) Modifier.semantics { contentDescription = described } else Modifier)
+                    .padding(horizontal = if (dense) 10.dp else if (compact) 14.dp else 8.dp), contentAlignment = Alignment.Center) {
+                    Text(option.label, if (described != null) Modifier.clearAndSetSemantics { } else Modifier,
+                        color = lerp(p.textSecondary, activeInk, cover), fontSize = if (dense) 12.sp else 13.sp,
+                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium, maxLines = 1)
+                }
             }
         }
     }
+}
+
+/** How much of a choice at [item] (left edge, width) the sliding pill covers, from 0 to 1. */
+private fun coverage(item: Pair<Float, Float>?, placed: Boolean, active: Boolean, left: Float, width: Float): Float {
+    if (item == null || !placed) return if (active) 1f else 0f
+    val (itemLeft, itemWidth) = item
+    if (itemWidth <= 0f) return if (active) 1f else 0f
+    val overlap = minOf(left + width, itemLeft + itemWidth) - maxOf(left, itemLeft)
+    return (overlap / itemWidth).coerceIn(0f, 1f)
 }
