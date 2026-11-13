@@ -177,7 +177,13 @@ object Routes {
         AnimatedVisibility(route != Routes.ONBOARDING, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp),
             enter = fadeIn(Motion.enter()) + slideInVertically(Motion.offset) { it / 2 },
             exit = fadeOut(Motion.fast()) + slideOutVertically(Motion.offset) { it / 2 }) {
-            NavIsland(lastTab, { target -> nav.navigate(target) { popUpTo(Routes.HOME); launchSingleTop = true } })
+            // Tapping the tab already shown does nothing: a single-top navigate would still swap in a new entry
+            // and replay the screen transition.
+            NavIsland(lastTab, { target ->
+                if (nav.currentBackStackEntry?.destination?.route != target) {
+                    nav.navigate(target) { popUpTo(Routes.HOME); launchSingleTop = true }
+                }
+            })
         }
     }
 }
