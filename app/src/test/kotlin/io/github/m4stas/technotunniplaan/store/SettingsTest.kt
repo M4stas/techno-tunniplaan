@@ -7,7 +7,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.preferencesOf
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.m4stas.technotunniplaan.Fixtures
-import io.github.m4stas.technotunniplaan.schedule.SubGroupFilter
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
@@ -60,8 +59,8 @@ class SettingsTest {
         assertSame(failure, thrown)
     }
 
-    @Test fun settingsSavedWithAViewModeStillLoad() = runTest {
-        val stored = preferencesOf(stringPreferencesKey("settings") to """{"home":{"kind":"CLASS","key":"k-xx-24a"},"viewMode":"WEEK"}""")
+    @Test fun settingsSavedWithRemovedFieldsStillLoad() = runTest {
+        val stored = preferencesOf(stringPreferencesKey("settings") to """{"home":{"kind":"CLASS","key":"k-xx-24a"},"viewMode":"WEEK","subGroupChoices":{"Grupp 1|Grupp 2":"Grupp 2"}}""")
         assertEquals(Settings(home = Fixtures.CLASS_A), SettingsStore(ReadStore(flowOf(stored))).settings.first())
     }
 
@@ -74,14 +73,10 @@ class SettingsTest {
         val dataStore = PreferenceDataStoreFactory.create(scope = backgroundScope, produceFile = { File(tmp.root, "settings.preferences_pb") })
         val store = SettingsStore(dataStore)
         assertEquals(Settings(), store.settings.first())
-        val choices = mapOf("Grupp 1|Grupp 2" to "Grupp 2")
-        store.update { it.withHome(Fixtures.CLASS_A).copy(subGroupChoices = choices, theme = ThemeMode.DARK) }
+        store.update { it.withHome(Fixtures.CLASS_A).copy(theme = ThemeMode.DARK) }
         val saved = store.settings.first()
         assertEquals(Fixtures.CLASS_A, saved.home)
         assertEquals(ThemeMode.DARK, saved.theme)
-        assertEquals(SubGroupFilter("k-xx-24a", choices), saved.subGroupFilter())
-        assertTrue(saved.withHome(Fixtures.CLASS_B).subGroupChoices.isEmpty())
-        assertNull(Settings(home = Fixtures.MARI, subGroupChoices = choices).subGroupFilter())
         assertEquals(listOf(Fixtures.MARI), Settings().toggleFavourite(Fixtures.MARI).favourites)
         assertTrue(Settings().toggleFavourite(Fixtures.MARI).toggleFavourite(Fixtures.MARI).favourites.isEmpty())
         dataStore.edit { it[stringPreferencesKey("settings")] = "{oops" }

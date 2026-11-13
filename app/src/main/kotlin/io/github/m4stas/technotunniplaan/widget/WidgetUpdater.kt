@@ -11,7 +11,6 @@ import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import io.github.m4stas.technotunniplaan.App
 import io.github.m4stas.technotunniplaan.schedule.*
-import io.github.m4stas.technotunniplaan.store.subGroupFilter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -26,7 +25,7 @@ object WidgetUpdater {
         NextLessonsWidget().updateAll(context)
         container.repository.ensureLoaded()
         val settings = container.settings.settings.first()
-        val schedule = Schedule(container.repository.weeks.value ?: emptyList(), settings.subGroupFilter())
+        val schedule = Schedule(container.repository.weeks.value ?: emptyList())
         val now = LocalDateTime.now(container.clock)
         val next = ids.mapNotNull { id ->
             val config = getAppWidgetState(context, PreferencesGlanceStateDefinition, id).toWidgetConfig()

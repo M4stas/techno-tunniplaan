@@ -24,8 +24,6 @@ class TimetableBuilderTest {
         val pe = t.lessons.single { it.subject == "Kehaline kasvatus" }
         assertEquals(listOf("k-xx-24a", "k-xx-24b"), pe.classes.map { it.key })
         assertEquals(2, pe.teachers.size); assertEquals(emptyList<Entity>(), pe.rooms)
-        assertEquals(listOf(Split("k-xx-24a", listOf("Grupp 1", "Grupp 2"))), t.splits)
-        assertEquals("Grupp 1|Grupp 2", t.splits[0].id)
         assertEquals(3, t.teachers.size); assertTrue(t.lessons.none { it.day == 5 })
     }
     @Test fun unknownLessonIsSkipped() { val r = Fixtures.raw(); assertEquals(6, build(r.copy(cards = r.cards.map { if (it.id == "c1") it.copy(lessonid = "*99") else it })).lessons.size) }

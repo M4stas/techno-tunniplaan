@@ -11,6 +11,7 @@ data class Palette(
     val accent: Color, val onAccent: Color, val accentText: Color, val accentTextSecondary: Color,
     val text: Color, val textSecondary: Color, val textMuted: Color, val textFaint: Color, val ghost: Color,
     val island: Color, val onIsland: Color, val track: Color, val selected: Color, val onSelected: Color,
+    val segmentActive: Color, val onSegmentActive: Color,
     val selectedRow: Color, val sheet: Color, val outline: Color, val error: Color,
 )
 
@@ -22,6 +23,7 @@ val DarkPalette = Palette(
     accent = Color(0xFFD4FF3A), onAccent = Color(0xFF000000), accentText = Color(0xFFD4FF3A), accentTextSecondary = Color(0xFF7F9A1F),
     text = Color(0xFFF4F4F2), textSecondary = Color(0xFF8A8A8A), textMuted = Color(0xFF777777), textFaint = Color(0xFF4D4D4D), ghost = Color(0xFF1E1E1E),
     island = Color(0xFF1B1B1B), onIsland = Color(0xFF8A8A8A), track = Color(0xFF1A1A1A), selected = Color(0xFFD4FF3A), onSelected = Color(0xFF000000),
+    segmentActive = Color(0xFF2E2E2E), onSegmentActive = Color(0xFFF4F4F2),
     selectedRow = Color(0x1FD4FF3A), sheet = Color(0xFF111111), outline = Color(0xFF262626), error = Color(0xFFFF6B6B),
 )
 
@@ -33,6 +35,7 @@ val LightPalette = Palette(
     accent = Color(0xFFD4FF3A), onAccent = Color(0xFF000000), accentText = Color(0xFF4D6100), accentTextSecondary = Color(0xFF8EA33A),
     text = Color(0xFF111111), textSecondary = Color(0xFF6B6B66), textMuted = Color(0xFF8A8A85), textFaint = Color(0xFFA9A9A3), ghost = Color(0xFFE6E6E1),
     island = Color(0xFF111111), onIsland = Color(0xFF8A8A8A), track = Color(0xFFEFEFEB), selected = Color(0xFF111111), onSelected = Color(0xFFD4FF3A),
+    segmentActive = Color(0xFFFFFFFF), onSegmentActive = Color(0xFF111111),
     selectedRow = Color(0xFFF0FBC2), sheet = Color(0xFFFFFFFF), outline = Color(0xFFEBEBE7), error = Color(0xFFB3261E),
 )
 

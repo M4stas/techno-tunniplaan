@@ -25,7 +25,7 @@ class App : Application(), Configuration.Provider {
         container = AppContainer(this)
         container.onTimetableChanged = { try { WidgetUpdater.refresh(this) } catch (_: IOException) { } }
         scope.launch {
-            container.settings.settings.map { Triple(it.home, it.theme, it.subGroupChoices) }
+            container.settings.settings.map { Pair(it.home, it.theme) }
                 .distinctUntilChanged().collect {
                     try { WidgetUpdater.refresh(this@App) } catch (_: IOException) { }
                 }

@@ -13,7 +13,6 @@
     <string name="update_failed">Tunniplaani uuendamine ebaõnnestus.</string>
     <string name="last_synced">Uuendatud %1$s</string>
     <string name="never_synced">Pole uuendatud</string>
-    <string name="sync_now">Uuenda kohe</string>
     <string name="entity_missing">Seda tunniplaani enam pole.</string>
     <string name="pick_again">Vali uuesti</string>
     <string name="tab_classes">Klassid</string>
@@ -23,8 +22,6 @@
     <string name="pin">Kinnita</string>
     <string name="unpin">Eemalda kinnitus</string>
     <string name="settings_home">Minu tunniplaan</string>
-    <string name="settings_groups">Rühmad</string>
-    <string name="groups_all">Kõik rühmad</string>
     <string name="settings_theme">Teema</string>
     <string name="theme_system">Süsteemi järgi</string>
     <string name="theme_dark">Tume</string>
@@ -58,4 +55,9 @@
     <string name="kind_teacher">Õpetaja</string>
     <string name="kind_room">Ruum</string>
     <string name="detail_teacher_room">Õpetaja · ruum</string>
+    <string name="settings_app">Rakendus</string>
+    <string name="option_auto">Auto</string>
+    <string name="sync_short">Uuenda</string>
+    <string name="last_synced_today">Uuendatud täna %1$s</string>
+    <string name="last_synced_yesterday">Uuendatud eile %1$s</string>
 </resources>

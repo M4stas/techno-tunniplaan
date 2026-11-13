@@ -99,7 +99,7 @@ object Routes {
                     })
                     val state by vm.state.collectAsStateWithLifecycle()
                     val locales = AppCompatDelegate.getApplicationLocales()
-                    SettingsScreen(state, { nav.navigate(Routes.ONBOARDING) }, vm::chooseGroup, vm::setTheme,
+                    SettingsScreen(state, { nav.navigate(Routes.ONBOARDING) }, vm::setTheme,
                         { tag -> AppCompatDelegate.setApplicationLocales(if (tag == null) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(tag)) },
                         vm::syncNow, if (locales.isEmpty) null else locales[0]?.language)
                 }, timetable = { entity, nav ->

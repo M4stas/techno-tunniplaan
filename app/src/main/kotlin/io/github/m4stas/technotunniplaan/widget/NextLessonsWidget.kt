@@ -19,7 +19,6 @@ import io.github.m4stas.technotunniplaan.MainActivity
 import io.github.m4stas.technotunniplaan.R
 import io.github.m4stas.technotunniplaan.schedule.*
 import io.github.m4stas.technotunniplaan.store.Settings
-import io.github.m4stas.technotunniplaan.store.subGroupFilter
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.TextStyle as DayTextStyle
@@ -57,7 +56,7 @@ class NextLessonsWidget : GlanceAppWidget() {
             val widthDp = LocalSize.current.width.value.toInt()
             val heightDp = LocalSize.current.height.value.toInt()
             val rowHeight = widgetRowHeight(widthDp, heightDp)
-            val content = widgetContent(weeks?.let { Schedule(it, settings.subGroupFilter()) }, entity,
+            val content = widgetContent(weeks?.let { Schedule(it) }, entity,
                 LocalDateTime.now(container.clock), minOf(config.count, rowsThatFit(heightDp, widthDp)))
             Column(GlanceModifier.fillMaxSize().background(colors.background).cornerRadius(24.dp)
                 .clickable(actionStartActivity(MainActivity.intentFor(context, entity)))

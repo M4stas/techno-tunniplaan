@@ -18,7 +18,7 @@ class SettingsViewModelTest {
         assertEquals(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES, nightMode(ThemeMode.DARK))
         assertEquals(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO, nightMode(ThemeMode.LIGHT))
     }
-    @Test fun writesChoicesAndSyncs() = kotlinx.coroutines.test.runTest {
+    @Test fun writesThemeAndSyncs() = kotlinx.coroutines.test.runTest {
         kotlinx.coroutines.Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
         try {
             val repository = TimetableRepository(TimetableCache(java.io.File(tmp.root, "cache")), kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
@@ -26,11 +26,6 @@ class SettingsViewModelTest {
             val api = io.github.m4stas.technotunniplaan.FakeApi(io.github.m4stas.technotunniplaan.edupage.EduPageDecoder.decodeViewer(Fixtures.text("viewer.json")), mutableMapOf("22" to Fixtures.raw()))
             val sync = io.github.m4stas.technotunniplaan.sync.SyncEngine(api, repository, settings, java.time.Clock.fixed(java.time.Instant.parse("2026-11-10T08:00:00Z"), SCHOOL_ZONE))
             val vm = SettingsViewModel(repository, settings, sync)
-            val split = Split("k-xx-24a", listOf("Grupp 1", "Grupp 2"))
-            vm.chooseGroup(split, "Grupp 1")
-            assertEquals(mapOf(split.id to "Grupp 1"), settings.settings.first { it.subGroupChoices.isNotEmpty() }.subGroupChoices)
-            vm.chooseGroup(split, null)
-            assertTrue(settings.settings.first { it.subGroupChoices.isEmpty() }.subGroupChoices.isEmpty())
             vm.setTheme(ThemeMode.LIGHT)
             assertEquals(ThemeMode.LIGHT, settings.settings.first { it.theme == ThemeMode.LIGHT }.theme)
             vm.syncNow()
@@ -41,12 +36,12 @@ class SettingsViewModelTest {
         } finally { kotlinx.coroutines.Dispatchers.resetMain() }
     }
 
-    @Test fun classGroupsUseStoredChoice() {
+    @Test fun homeTitleAndKindMatchSelection() {
         val schedule = Schedule(listOf(Fixtures.week1()))
-        val state = settingsUiState(schedule, Settings(home = Fixtures.CLASS_A, subGroupChoices = mapOf("Grupp 1|Grupp 2" to "Grupp 2")))
+        val state = settingsUiState(schedule, Settings(home = Fixtures.CLASS_A))
         assertEquals("K-XX-24A", state.homeTitle)
-        assertEquals(listOf(SplitUi(Split("k-xx-24a", listOf("Grupp 1", "Grupp 2")), "Grupp 2")), state.splits)
-        assertTrue(settingsUiState(schedule, Settings(home = Fixtures.MARI)).splits.isEmpty())
-        assertTrue(settingsUiState(schedule, Settings(home = Fixtures.CLASS_B)).splits.isEmpty())
+        assertEquals(EntityKind.CLASS, state.homeKind)
+        assertEquals(EntityKind.TEACHER, settingsUiState(schedule, Settings(home = Fixtures.MARI)).homeKind)
+        assertNull(settingsUiState(schedule, Settings()).homeKind)
     }
 }
