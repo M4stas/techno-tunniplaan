@@ -13,7 +13,7 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = providers.gradleProperty("versionCode").orElse("1").get().toInt()
-        versionName = providers.gradleProperty("versionName").orElse("0.1.0").get()
+        versionName = providers.gradleProperty("versionName").orElse("1.0.0").get()
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -26,8 +26,21 @@ android {
     testOptions.unitTests.isIncludeAndroidResources = true
     // Robolectric's SDK 37 runtime reads jdk.internal.access, which JDK 21 does not export by default.
     testOptions.unitTests.all { it.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED") }
+    // The release key lives outside the repository. Builds without these properties stay unsigned.
+    val releaseStoreFile = providers.gradleProperty("TECHNO_RELEASE_STORE_FILE").orNull
+    signingConfigs {
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = providers.gradleProperty("TECHNO_RELEASE_STORE_PASSWORD").get()
+                keyAlias = providers.gradleProperty("TECHNO_RELEASE_KEY_ALIAS").get()
+                keyPassword = providers.gradleProperty("TECHNO_RELEASE_KEY_PASSWORD").get()
+            }
+        }
+    }
     buildTypes {
         release {
+            if (releaseStoreFile != null) signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
