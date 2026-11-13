@@ -1,6 +1,7 @@
 package io.github.m4stas.technotunniplaan.widget
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.glance.color.ColorProvider
 import io.github.m4stas.technotunniplaan.store.ThemeMode
 import io.github.m4stas.technotunniplaan.ui.theme.Palette
@@ -28,7 +29,8 @@ internal fun widgetRoles(p: Palette) = WidgetRoles(
     widgetCurrentCard = p.widgetCurrentCard,
     cardOutline = p.cardOutline,
     currentOutline = p.currentOutline,
-    accentTint = p.accentTint,
+    // Glance tints shapes with SRC_ATOP, which drops a translucent tint's alpha, so blend it over the card first.
+    accentTint = p.accentTint.compositeOver(p.widgetCurrentCard),
     accentText = widgetAccent(p),
     accentTextSecondary = p.accentTextSecondary,
     text = p.text,

@@ -1,6 +1,7 @@
 package io.github.m4stas.technotunniplaan.widget
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import io.github.m4stas.technotunniplaan.ui.theme.DarkPalette
 import io.github.m4stas.technotunniplaan.ui.theme.LightPalette
 import org.junit.Assert.assertEquals
@@ -18,6 +19,12 @@ class WidgetColorsTest {
             assertEquals(current, roles.widgetCurrentCard)
             assertEquals(widgetAccent(palette), roles.accentText)
         }
+    }
+    /** Glance tints a shape with SRC_ATOP, which drops a translucent tint's alpha, so the fill must be opaque. */
+    @Test fun progressFillIsOpaqueAndBlendedOverTheCurrentCard() {
+        assertEquals(DarkPalette.accentTint.compositeOver(DarkPalette.widgetCurrentCard), widgetRoles(DarkPalette).accentTint)
+        assertEquals(1f, widgetRoles(DarkPalette).accentTint.alpha)
+        assertEquals(LightPalette.accentTint, widgetRoles(LightPalette).accentTint)
     }
     @Test fun buildsAllModes() { ThemeMode.entries.forEach { widgetColors(it) } }
     @Test fun timeTextUsesTheAccentTextRole() {
