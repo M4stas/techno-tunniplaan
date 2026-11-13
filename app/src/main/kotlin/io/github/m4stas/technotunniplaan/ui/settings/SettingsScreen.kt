@@ -61,6 +61,7 @@ import java.time.format.DateTimeFormatter
                 SegmentOption(null, auto, system),
                 SegmentOption("et", stringResource(R.string.language_et_short), stringResource(R.string.language_et)),
                 SegmentOption("en", stringResource(R.string.language_en_short), stringResource(R.string.language_en)),
+                SegmentOption("ru", stringResource(R.string.language_ru_short), stringResource(R.string.language_ru)),
             ), language, onLanguage, dense = true)
         }
         Row(Modifier.fillMaxWidth().padding(top = 14.dp).padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
