@@ -25,6 +25,8 @@ fun isCompactWidget(heightDp: Int): Boolean = heightDp < 70
 data class WidgetLesson(
     val date: LocalDate, val start: LocalTime, val end: LocalTime, val text: LessonText,
     val status: SlotStatus, val progress: Float, val breakBefore: BreakUi?, val newDay: Boolean,
+    /** Every lesson in this slot; parallel lessons with the same date, start and end share one card. */
+    val entries: List<LessonText> = listOf(text),
 )
 
 sealed interface WidgetContent {
@@ -33,32 +35,42 @@ sealed interface WidgetContent {
     data class Lessons(val entityName: String, val lessons: List<WidgetLesson>) : WidgetContent
 }
 
+/** The next [count] time slots; lessons with the same date, start and end form one slot. */
+fun Schedule.nextLessonSlots(entity: EntityRef, now: LocalDateTime, count: Int): List<List<DatedLesson>> =
+    nextLessons(entity, now, Int.MAX_VALUE).groupBy { Triple(it.date, it.lesson.start, it.lesson.end) }
+        .values.take(count.coerceAtLeast(0))
+
 fun widgetContent(schedule: Schedule?, entity: EntityRef?, now: LocalDateTime, count: Int): WidgetContent {
     if (schedule == null || schedule.weeks.isEmpty() || entity == null) return WidgetContent.NoData
-    val upcoming = schedule.nextLessons(entity, now, count.coerceIn(1, 5))
-    if (upcoming.isEmpty()) return WidgetContent.NoLessons
-    return WidgetContent.Lessons(schedule.find(entity)?.name.orEmpty(), upcoming.mapIndexed { index, dated ->
+    val slots = schedule.nextLessonSlots(entity, now, count.coerceIn(1, 5))
+    if (slots.isEmpty()) return WidgetContent.NoLessons
+    return WidgetContent.Lessons(schedule.find(entity)?.name.orEmpty(), slots.mapIndexed { index, slot ->
+        val dated = slot.first()
         val lesson = dated.lesson
-        val previous = upcoming.getOrNull(index - 1)
-        val previousEnd = upcoming.take(index).filter { it.date == dated.date }
+        val previous = slots.getOrNull(index - 1)?.first()
+        val previousEnd = slots.take(index).flatten().filter { it.date == dated.date }
             .maxOfOrNull { it.lesson.end }
         val current = now >= dated.startsAt && now < dated.endsAt
         val progress = if (current) {
             (Duration.between(lesson.start, now.toLocalTime()).seconds.toFloat() /
                 Duration.between(lesson.start, lesson.end).seconds).coerceIn(0f, 1f)
         } else 0f
-        WidgetLesson(dated.date, lesson.start, lesson.end, lessonText(lesson, entity),
+        val entries = slot.map { lessonText(it.lesson, entity) }
+        WidgetLesson(dated.date, lesson.start, lesson.end, entries.first(),
             if (current) SlotStatus.CURRENT else SlotStatus.UPCOMING, progress,
             previousEnd?.let { breakBetween(it, lesson.start) },
-            previous != null && previous.date != dated.date)
+            previous != null && previous.date != dated.date, entries)
     })
 }
+
+/** Height of a timeline card: one 46dp row plus 24dp for each parallel lesson after the first. */
+fun timelineCardHeight(lesson: WidgetLesson): Int = 46 + 24 * (lesson.entries.size - 1)
 
 fun timelineRowsThatFit(heightDp: Int, lessons: List<WidgetLesson>): Int {
     var available = heightDp - 12 - 12 - 28
     var rows = 0
     for (lesson in lessons) {
-        val cost = 46 + if (rows == 0) 0 else if (lesson.newDay) 26 else if (lesson.breakBefore != null) 20 else 0
+        val cost = timelineCardHeight(lesson) + if (rows == 0) 0 else if (lesson.newDay) 26 else if (lesson.breakBefore != null) 20 else 0
         if (available < cost) break
         available -= cost
         rows++

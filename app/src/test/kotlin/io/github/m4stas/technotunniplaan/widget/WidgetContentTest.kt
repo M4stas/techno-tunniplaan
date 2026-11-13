@@ -137,4 +137,22 @@ class WidgetContentTest {
         val now = mon.atTime(9, 57)
         assertEquals(mon.atTime(10, 0), nextRedrawAt(s.nextLessons(CLASS_A, now, 2), now))
     }
+
+    @Test fun parallelLessonsShareOneSlot() {
+        val week = Fixtures.week1()
+        val template = s.nextLessons(CLASS_A, mon.atTime(8, 45), 1).single().lesson
+        val first = template.copy(start = LocalTime.of(10, 15), end = LocalTime.of(11, 45))
+        val second = first.copy(rooms = emptyList())
+        val later = first.copy(start = LocalTime.of(12, 0), end = LocalTime.of(13, 0))
+        val schedule = Schedule(listOf(week.copy(lessons = listOf(first, second, later))))
+        val lessons = (widgetContent(schedule, CLASS_A, mon.atTime(9, 0), 2) as WidgetContent.Lessons).lessons
+        assertEquals(2, lessons.size)
+        assertEquals(2, lessons[0].entries.size)
+        assertEquals(lessons[0].text, lessons[0].entries[0])
+        assertEquals("", lessons[0].entries[1].place)
+        assertEquals(1, lessons[1].entries.size)
+        assertEquals(1, timelineRowsThatFit(46 + 52 + 24, lessons))
+        assertEquals(2, timelineRowsThatFit(46 + 52 + 24 + 20 + 46, lessons))
+        assertEquals(3, schedule.nextLessonSlots(CLASS_A, mon.atTime(9, 0), 5).flatten().size)
+    }
 }

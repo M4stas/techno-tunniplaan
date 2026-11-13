@@ -8,6 +8,7 @@ import androidx.glance.layout.*
 import androidx.glance.text.*
 import androidx.glance.unit.ColorProvider
 import io.github.m4stas.technotunniplaan.R
+import io.github.m4stas.technotunniplaan.schedule.LessonText
 import io.github.m4stas.technotunniplaan.ui.timetable.*
 import java.time.format.DateTimeFormatter
 
@@ -47,13 +48,24 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
                     } else {
                         if (single && !narrow) TimeColumn(lesson, colors, current)
                         Column(GlanceModifier.defaultWeight().fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
-                            Label(lesson.text.title, if (large) 16 else if (single) 15 else 14,
-                                if (current) colors.accentText else colors.text, large)
-                            val details = if (narrow && !large) {
-                                (if (single) listOf(lesson.text.place, clock) else listOf(clock, lesson.text.place))
-                            } else if (narrow) listOf(lesson.text.place) else listOf(lesson.text.who, lesson.text.place)
-                            Label(details.map { it.trim() }.filter { it.isNotBlank() }.joinToString(" · "), if (single || large) 12 else 11,
-                                if (large || current) colors.textSecondary else colors.textMuted)
+                            val parallel = lesson.entries.size > 1
+                            val titleColor = if (current) colors.accentText else colors.text
+                            val detailSize = if (single || large) 12 else 11
+                            val detailColor = if (large || current) colors.textSecondary else colors.textMuted
+                            val title = lesson.entries.map { it.title }.distinct().joinToString(" / ")
+                            if (parallel && narrow && !large) {
+                                Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                    Column(GlanceModifier.defaultWeight()) { Label(title, if (single) 15 else 14, titleColor) }
+                                    Label(clock, detailSize, detailColor)
+                                }
+                            } else Label(title, if (large) 16 else if (single) 15 else 14, titleColor, large)
+                            if (parallel) EntryRows(lesson.entries, colors, detailSize, detailColor, titleColor)
+                            else {
+                                val details = if (narrow && !large) {
+                                    (if (single) listOf(lesson.text.place, clock) else listOf(clock, lesson.text.place))
+                                } else if (narrow) listOf(lesson.text.place) else listOf(lesson.text.who, lesson.text.place)
+                                Label(details.map { it.trim() }.filter { it.isNotBlank() }.joinToString(" · "), detailSize, detailColor)
+                            }
                             if (large) {
                                 Spacer(GlanceModifier.defaultWeight())
                                 Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
@@ -71,6 +83,18 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
                     }
                 }
             }
+        }
+    }
+}
+
+/** One row per parallel lesson: who on the left, place on the right, a hairline between rows. */
+@Composable private fun EntryRows(entries: List<LessonText>, colors: WidgetColors, size: Int,
+    whoColor: ColorProvider, placeColor: ColorProvider) {
+    entries.forEachIndexed { index, entry ->
+        if (index > 0) Spacer(GlanceModifier.fillMaxWidth().height(1.dp).background(colors.cardOutline))
+        Row(GlanceModifier.fillMaxWidth().height(23.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(GlanceModifier.defaultWeight()) { Label(entry.who.ifBlank { entry.title }, size, whoColor) }
+            if (entry.place.isNotBlank()) { Spacer(GlanceModifier.width(8.dp)); Label(entry.place, size, placeColor) }
         }
     }
 }
@@ -118,8 +142,10 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
                 Row(GlanceModifier.fillMaxSize().shape(R.drawable.widget_slim_14, colors.widgetCard).padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                     Label(second.start.format(timeFormat), 13, colors.textSecondary)
                     Spacer(GlanceModifier.width(10.dp))
-                    Column(GlanceModifier.defaultWeight()) { Label(second.text.title, 13, colors.text) }
-                    if (!narrow) Label(if (LocalSize.current.width.value >= 330) listOf(second.text.who, second.text.place).filter { it.isNotBlank() }.joinToString(" · ") else second.text.place, 12, colors.textMuted)
+                    val places = second.entries.map { it.place }.filter { it.isNotBlank() }.distinct().joinToString(", ")
+                    val who = second.entries.map { it.who }.filter { it.isNotBlank() }.distinct().joinToString(", ")
+                    Column(GlanceModifier.defaultWeight()) { Label(second.entries.map { it.title }.distinct().joinToString(" / "), 13, colors.text) }
+                    if (!narrow) Label(if (LocalSize.current.width.value >= 330) listOf(who, places).filter { it.isNotBlank() }.joinToString(" · ") else places, 12, colors.textMuted)
                 }
             }
         }
@@ -135,7 +161,7 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
         }
         lessons.forEachIndexed { index, lesson ->
             if (index > 0 && (lesson.newDay || lesson.breakBefore != null)) WidgetBreakDayLabel(lesson, colors, narrow, true)
-            WidgetLessonCard(lesson, colors, narrow, 46f, 12)
+            WidgetLessonCard(lesson, colors, narrow, timelineCardHeight(lesson).toFloat(), 12)
         }
     }
 }
