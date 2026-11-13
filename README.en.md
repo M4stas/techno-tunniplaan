@@ -35,7 +35,7 @@ on the phone for when you are offline and shows the next lessons in a home scree
 2. Download `techno-tunniplaan-1.0.0.apk`.
 3. Open the downloaded file. If Android asks, allow your browser to install apps.
 4. Tap **Install**, then **Open**.
-5. Pick your class, teacher or room.
+5. Pick your class or teacher. To view a room's timetable, open **Browse** after setup.
 
 Install a new version the same way, over the old one. Your settings stay.
 

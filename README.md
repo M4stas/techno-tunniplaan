@@ -35,7 +35,7 @@ telefonis ka ilma internetita ja näitab järgmisi tunde avaekraani vidinas.
 2. Laadi alla fail `techno-tunniplaan-1.0.0.apk`.
 3. Ava allalaaditud fail. Kui Android küsib, luba brauseril rakendusi paigaldada.
 4. Vajuta **Paigalda** ja seejärel **Ava**.
-5. Vali oma klass, õpetaja või ruum.
+5. Vali oma klass või õpetaja. Ruumi tunniplaani vaatamiseks ava pärast seadistamist **Sirvi**.
 
 Uue versiooni paigaldad samamoodi vana peale. Seaded jäävad alles.
 
