@@ -17,7 +17,8 @@
         <activity android:name=".widget.WidgetConfigActivity" android:exported="true">
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" /></intent-filter>
         </activity>
-        <activity android:name=".MainActivity" android:exported="true">
+        <!-- The app handles theme and language changes itself, so changing them in settings does not recreate the activity. -->
+        <activity android:name=".MainActivity" android:exported="true" android:configChanges="uiMode|locale|layoutDirection">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

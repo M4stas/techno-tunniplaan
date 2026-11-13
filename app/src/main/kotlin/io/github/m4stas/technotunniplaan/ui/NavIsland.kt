@@ -13,7 +13,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
@@ -24,6 +23,7 @@ import kotlin.math.roundToInt
 import kotlin.math.abs
 import androidx.compose.ui.graphics.lerp
 import io.github.m4stas.technotunniplaan.ui.theme.Motion
+import io.github.m4stas.technotunniplaan.ui.theme.awaitSteadyFrames
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,16 +51,8 @@ import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
     val indicator = remember { Animatable(activeIndex.coerceAtLeast(0).toFloat()) }
     LaunchedEffect(activeIndex) {
         if (activeIndex < 0) return@LaunchedEffect
-        // The new screen builds in the frames right after the route changes, and on a phone one of those frames can
-        // take 100 ms. A slide started then is over before the next frame is drawn, so the circle would jump.
-        // Wait until frames arrive at a normal pace again, for a few frames at most, then slide.
-        var last = withFrameNanos { it }
-        for (attempt in 0 until 6) {
-            val now = withFrameNanos { it }
-            val steady = now - last < 25_000_000L
-            last = now
-            if (steady) break
-        }
+        // The new screen builds in the frames right after the route changes.
+        awaitSteadyFrames()
         indicator.animateTo(activeIndex.toFloat(), Motion.medium())
     }
     val position = indicator.value

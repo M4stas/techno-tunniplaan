@@ -34,6 +34,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import io.github.m4stas.technotunniplaan.ui.settings.*
 import io.github.m4stas.technotunniplaan.ui.components.IslandFade
@@ -98,9 +99,15 @@ object Routes {
                         override fun <T : ViewModel> create(modelClass: Class<T>): T = SettingsViewModel(container.repository, container.settings, container.sync) as T
                     })
                     val state by vm.state.collectAsStateWithLifecycle()
-                    val locales = AppCompatDelegate.getApplicationLocales()
+                    var locales by remember(LocalConfiguration.current) {
+                        mutableStateOf(AppCompatDelegate.getApplicationLocales())
+                    }
                     SettingsScreen(state, { nav.navigate(Routes.ONBOARDING) }, vm::setTheme,
-                        { tag -> AppCompatDelegate.setApplicationLocales(if (tag == null) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(tag)) },
+                        { tag ->
+                            val requested = if (tag == null) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(tag)
+                            AppCompatDelegate.setApplicationLocales(requested)
+                            locales = requested
+                        },
                         vm::syncNow, if (locales.isEmpty) null else locales[0]?.language)
                 }, timetable = { entity, nav ->
                     val vm: TimetableViewModel = viewModel(factory = object : ViewModelProvider.Factory {

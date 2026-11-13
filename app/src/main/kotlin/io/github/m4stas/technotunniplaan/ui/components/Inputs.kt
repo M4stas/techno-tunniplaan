@@ -11,6 +11,7 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import io.github.m4stas.technotunniplaan.ui.theme.Motion
+import io.github.m4stas.technotunniplaan.ui.theme.awaitSteadyFrames
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
@@ -81,6 +82,8 @@ data class SegmentOption<out T>(val value: T, val label: String, val description
             width.snapTo(target.second)
             placed = true
         } else coroutineScope {
+            // A new theme or language redraws the whole screen in the frames right after the tap.
+            awaitSteadyFrames()
             launch { left.animateTo(target.first, Motion.medium()) }
             launch { width.animateTo(target.second, Motion.medium()) }
         }
