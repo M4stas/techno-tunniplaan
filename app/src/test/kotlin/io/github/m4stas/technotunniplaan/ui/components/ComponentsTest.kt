@@ -6,6 +6,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import io.github.m4stas.technotunniplaan.store.ThemeMode
 import io.github.m4stas.technotunniplaan.ui.theme.AppTheme
 import org.junit.*
@@ -35,6 +40,24 @@ class ComponentsTest {
         assertNull(picked)
         // A shortened label is hidden from accessibility services. The description stands in for it.
         compose.onNodeWithText("ET").assertDoesNotExist()
+    }
+
+    @Test fun segmentedPillSlidesToTheNewChoice() {
+        val options = listOf(SegmentOption("a", "Classes"), SegmentOption("b", "Teachers"), SegmentOption("c", "Rooms"))
+        var selected by mutableStateOf("a")
+        compose.setContent { AppTheme(ThemeMode.DARK) { Segmented(options, selected, { selected = it }, Modifier.width(300.dp)) } }
+        fun left(tagOrText: String, byTag: Boolean = false) =
+            (if (byTag) compose.onNodeWithTag(tagOrText) else compose.onNodeWithText(tagOrText)).getBoundsInRoot().left
+        assertEquals(left("Classes"), left("segment-indicator", byTag = true))
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithText("Rooms").performClick()
+        // Frame by frame, the pill passes through positions between the old and the new choice instead of jumping.
+        val samples = List(30) { compose.mainClock.advanceTimeByFrame(); left("segment-indicator", byTag = true) }
+        assertTrue(samples.any { it > left("Classes") && it < left("Rooms") })
+        compose.mainClock.autoAdvance = true
+        compose.waitForIdle()
+        assertEquals(left("Rooms"), left("segment-indicator", byTag = true))
+        compose.onNodeWithText("Rooms").assertIsSelected()
     }
 
     @Test fun searchFieldAndLoadFailure() {
