@@ -24,6 +24,8 @@ The no-mistakes configuration targets `dev` by default. From a feature branch wi
 no-mistakes axi run --base-branch dev --intent "Describe the intended change"
 ```
 
+When several validated pull requests wait to merge into `dev`, merge them one at a time. A later pull request that falls behind `dev` only because an earlier one merged needs no new gate run. Update it with `gh pr update-branch <number>`, wait for `build-test` to pass, then merge.
+
 Keep existing unpublished feature work on its branch. Bring it up to date with `origin/dev` before submitting it. Do not commit directly on either protected branch or publish a pull request branch directly to `origin`.
 
 ## Promoting development work
