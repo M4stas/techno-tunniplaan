@@ -1,0 +1,64 @@
+<resources>
+    <string name="app_name">Techno tunniplaan</string>
+    <string name="select_timetable">Выберите расписание</string>
+    <string name="search">Поиск</string>
+    <string name="offline_title">Не удалось загрузить расписание</string>
+    <string name="offline_body">Проверьте подключение к интернету. Сохранённого расписания пока нет.</string>
+    <string name="retry">Повторить</string>
+    <string name="nav_timetable">Расписание</string>
+    <string name="nav_browse">Обзор</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="no_lessons">Уроков нет</string>
+    <string name="week_outdated">Расписание на эту неделю ещё не опубликовано.</string>
+    <string name="update_failed">Не удалось обновить расписание.</string>
+    <string name="last_synced">Обновлено %1$s</string>
+    <string name="never_synced">Не обновлялось</string>
+    <string name="entity_missing">Этого расписания больше нет.</string>
+    <string name="pick_again">Выбрать заново</string>
+    <string name="tab_classes">Группы</string>
+    <string name="tab_teachers">Учителя</string>
+    <string name="tab_rooms">Кабинеты</string>
+    <string name="favourites">Избранное</string>
+    <string name="pin">Закрепить</string>
+    <string name="unpin">Открепить</string>
+    <string name="settings_home">Моё расписание</string>
+    <string name="settings_theme">Тема</string>
+    <string name="theme_system">Как в системе</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_light">Светлая</string>
+    <string name="settings_language">Язык</string>
+    <string name="widget_name">Следующие уроки</string>
+    <string name="widget_open_app">Откройте приложение для настройки</string>
+    <string name="widget_no_lessons">Предстоящих уроков нет</string>
+    <string name="widget_count">Показывать уроков</string>
+    <string name="save">Сохранить</string>
+    <string name="language_et">Eesti</string>
+    <string name="language_en">English</string>
+    <string name="language_ru">Русский</string>
+    <string name="break_short">Перемена %1$d мин</string>
+    <string name="break_lunch">Обед %1$d мин</string>
+    <string name="break_free">Свободно %1$d мин</string>
+    <string name="lesson_in_progress">Идёт</string>
+    <string name="date_pattern">d MMMM</string>
+    <string name="short_date_pattern">d MMM</string>
+    <string name="free_day">Свободно</string>
+    <string name="next_lesson_today">Следующий урок сегодня в %1$s</string>
+    <string name="next_lesson_weekday">Следующий урок %1$s в %2$s</string>
+    <string name="next_lesson_date">Следующий урок %1$s в %2$s</string>
+    <string-array name="weekday_letters">
+        <item>П</item><item>В</item><item>С</item><item>Ч</item><item>П</item><item>С</item><item>В</item>
+    </string-array>
+    <string-array name="weekday_on">
+        <item>в понедельник</item><item>во вторник</item><item>в среду</item><item>в четверг</item><item>в пятницу</item><item>в субботу</item><item>в воскресенье</item>
+    </string-array>
+
+    <string name="kind_class">Группа</string>
+    <string name="kind_teacher">Учитель</string>
+    <string name="kind_room">Кабинет</string>
+    <string name="detail_teacher_room">Учитель · кабинет</string>
+    <string name="settings_app">Приложение</string>
+    <string name="option_auto">Авто</string>
+    <string name="sync_short">Обновить</string>
+    <string name="last_synced_today">Обновлено сегодня в %1$s</string>
+    <string name="last_synced_yesterday">Обновлено вчера в %1$s</string>
+</resources>
