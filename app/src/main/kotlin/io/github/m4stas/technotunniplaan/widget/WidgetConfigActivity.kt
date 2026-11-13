@@ -67,7 +67,7 @@ class WidgetConfigActivity : AppCompatActivity() {
                                         colors = FilterChipDefaults.filterChipColors(containerColor = p.surface, labelColor = p.text, selectedContainerColor = p.selected, selectedLabelColor = p.onSelected))
                                 }
                             }
-                            Box(Modifier.weight(1f)) { BrowseScreen(state, browse::setTab, browse::setQuery, bottomClearance = 0.dp) { config = config.copy(entity = it) } }
+                            Box(Modifier.weight(1f)) { BrowseScreen(state, browse::setTab, browse::setQuery, bottomClearance = 0.dp, showTitle = false) { config = config.copy(entity = it) } }
                             Button(enabled = !saving, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = p.selected, contentColor = p.onSelected),
                                 modifier = Modifier.fillMaxWidth(), onClick = {
                                     saving = true
