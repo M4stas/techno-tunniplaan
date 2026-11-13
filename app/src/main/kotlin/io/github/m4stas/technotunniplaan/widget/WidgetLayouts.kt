@@ -24,15 +24,13 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
     height: Float, outer: Int, large: Boolean = false, single: Boolean = false) {
     val context = LocalContext.current
     val current = lesson.status == SlotStatus.CURRENT
-    val width = LocalSize.current.width.value - outer * 2 - if (!narrow && !large) 48 else 0
+    val column = !narrow && !large && !single
+    val width = LocalSize.current.width.value - outer * 2 - if (column) 48 else 0
     val shape = if (single || large) R.drawable.widget_card_18 else R.drawable.widget_card_16
     val fill = if (single || large) R.drawable.widget_fill_18 else R.drawable.widget_fill_16
     Row(GlanceModifier.fillMaxWidth().height(height.dp)) {
-        if (!narrow && !large) {
-            Column(GlanceModifier.width(38.dp)) {
-                Label(lesson.start.format(timeFormat), 11, if (current) colors.accentText else colors.textSecondary)
-                Label(lesson.end.format(timeFormat), 11, if (current) colors.accentTextSecondary else colors.textFaint)
-            }
+        if (column) {
+            TimeColumn(lesson, colors, current)
             Spacer(GlanceModifier.width(10.dp))
         }
         Box(GlanceModifier.defaultWeight().fillMaxHeight().shape(shape,
@@ -40,19 +38,21 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
             Box(GlanceModifier.fillMaxSize().shape(shape, if (current) colors.widgetCurrentCard else colors.widgetCard)) {
                 val elapsed = lesson.progress.coerceIn(0f, 1f) * (width - 2).coerceAtLeast(0f)
                 if (current && elapsed >= 1) Spacer(GlanceModifier.width(elapsed.dp).fillMaxHeight().shape(fill, colors.accentTint))
-                Column(GlanceModifier.fillMaxSize().padding(horizontal = (if (large || single) 14 else 12).dp,
-                    vertical = (if (large) 12 else if (single) 0 else 8).dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(GlanceModifier.fillMaxSize().padding(horizontal = (if (large || single) 14 else 12).dp,
+                    vertical = (if (large) 12 else 0).dp), verticalAlignment = Alignment.CenterVertically) {
+                if (single && !narrow) TimeColumn(lesson, colors, current)
+                Column(GlanceModifier.defaultWeight().fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
                     Label(lesson.text.title, if (large) 16 else if (single) 15 else 14,
                         if (current) colors.accentText else colors.text, large)
                     val clock = if (current) context.getString(R.string.widget_until, lesson.end.format(timeFormat)) else lesson.start.format(timeFormat)
                     val details = if (narrow && !large) {
                         (if (single) listOf(lesson.text.place, clock) else listOf(clock, lesson.text.place))
                     } else if (narrow) listOf(lesson.text.place) else listOf(lesson.text.who, lesson.text.place)
-                    Label(details.filter { it.isNotBlank() }.joinToString(" · "), if (single || large) 12 else 11,
+                    Label(details.map { it.trim() }.filter { it.isNotBlank() }.joinToString(" · "), if (single || large) 12 else 11,
                         if (large || current) colors.textSecondary else colors.textMuted)
                     if (large) {
                         Spacer(GlanceModifier.defaultWeight())
-                        Row(verticalAlignment = Alignment.Bottom) {
+                        Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
                             Label(if (narrow) (if (current) lesson.end else lesson.start).format(timeFormat)
                                 else lesson.start.format(timeFormat), 22, if (current) colors.accentText else colors.textSecondary, true)
                             Label(if (narrow) " " + context.getString(if (current) R.string.widget_ends else R.string.widget_starts)
@@ -64,8 +64,16 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
                         }
                     }
                 }
+                }
             }
         }
+    }
+}
+
+@Composable private fun TimeColumn(lesson: WidgetLesson, colors: WidgetColors, current: Boolean) {
+    Column(GlanceModifier.width(38.dp)) {
+        Label(lesson.start.format(timeFormat), 11, if (current) colors.accentText else colors.textSecondary)
+        Label(lesson.end.format(timeFormat), 11, if (current) colors.accentTextSecondary else colors.textFaint)
     }
 }
 
@@ -75,7 +83,7 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
     Row(GlanceModifier.fillMaxWidth().height((if (timeline && lesson.newDay) 26 else 20).dp)
         .padding(start = (if (!timeline) 14 else if (narrow) 12 else 48).dp), verticalAlignment = Alignment.CenterVertically) {
         if (lesson.newDay) {
-            Label(dayTitle(lesson.date, locale), if (timeline) 12 else 10, colors.textFaint, timeline)
+            Label(dayTitle(lesson.date, locale), if (timeline) 12 else 10, if (timeline) colors.textSecondary else colors.textFaint, timeline)
             if (timeline) {
                 Spacer(GlanceModifier.defaultWeight())
                 Label(dateLabel(lesson.date, context.getString(R.string.short_date_pattern), locale), 12, colors.textMuted)
@@ -116,11 +124,10 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
 @Composable internal fun WidgetTimeline(entityName: String, lessons: List<WidgetLesson>, colors: WidgetColors, narrow: Boolean) {
     val context = LocalContext.current
     Column(GlanceModifier.fillMaxSize().padding(12.dp)) {
-        Row(GlanceModifier.fillMaxWidth().height(20.dp)) {
+        Row(GlanceModifier.fillMaxWidth().height(28.dp)) {
             lessons.firstOrNull()?.let { Label(dayTitle(it.date, context.resources.configuration.locales[0]), 18, colors.text, true) }
             if (!narrow) { Spacer(GlanceModifier.defaultWeight()); Label(entityName, 12, colors.textMuted) }
         }
-        Spacer(GlanceModifier.height(8.dp))
         lessons.forEachIndexed { index, lesson ->
             if (index > 0 && (lesson.newDay || lesson.breakBefore != null)) WidgetBreakDayLabel(lesson, colors, narrow, true)
             WidgetLessonCard(lesson, colors, narrow, 46f, 12)
