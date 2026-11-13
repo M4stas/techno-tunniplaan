@@ -39,6 +39,8 @@ fun widgetContent(schedule: Schedule?, entity: EntityRef?, now: LocalDateTime, c
     return WidgetContent.Lessons(schedule.find(entity)?.name.orEmpty(), upcoming.mapIndexed { index, dated ->
         val lesson = dated.lesson
         val previous = upcoming.getOrNull(index - 1)
+        val previousEnd = upcoming.take(index).filter { it.date == dated.date }
+            .maxOfOrNull { it.lesson.end }
         val current = now >= dated.startsAt && now < dated.endsAt
         val progress = if (current) {
             (Duration.between(lesson.start, now.toLocalTime()).seconds.toFloat() /
@@ -46,8 +48,7 @@ fun widgetContent(schedule: Schedule?, entity: EntityRef?, now: LocalDateTime, c
         } else 0f
         WidgetLesson(dated.date, lesson.start, lesson.end, lessonText(lesson, entity),
             if (current) SlotStatus.CURRENT else SlotStatus.UPCOMING, progress,
-            previous?.takeIf { it.date == dated.date && lesson.start > it.lesson.end }
-                ?.let { breakBetween(it.lesson.end, lesson.start) },
+            previousEnd?.let { breakBetween(it, lesson.start) },
             previous != null && previous.date != dated.date)
     })
 }

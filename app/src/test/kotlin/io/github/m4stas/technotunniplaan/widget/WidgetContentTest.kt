@@ -71,6 +71,48 @@ class WidgetContentTest {
         assertNull(lessons[2].breakBefore)
     }
 
+    @Test fun breaksFollowTheLatestOverlappingEnd() {
+        val week = Fixtures.week1()
+        val template = s.nextLessons(CLASS_A, mon.atTime(8, 45), 1).single().lesson
+        val long = template.copy(start = LocalTime.of(8, 30), end = LocalTime.of(10, 0))
+        val short = long.copy(end = LocalTime.of(9, 0))
+        for (overlaps in listOf(listOf(long, short), listOf(short, long))) {
+            for ((start, expected) in listOf(
+                LocalTime.of(10, 15) to BreakUi(15, BreakKind.BREAK),
+                LocalTime.of(9, 45) to null,
+                LocalTime.of(10, 0) to null,
+            )) {
+                val schedule = Schedule(listOf(week.copy(lessons = overlaps +
+                    template.copy(start = start, end = LocalTime.of(11, 0)))))
+                val lessons = (widgetContent(schedule, CLASS_A, mon.atTime(8, 45), 3)
+                    as WidgetContent.Lessons).lessons
+                assertEquals(3, lessons.size)
+                assertNull(lessons[0].breakBefore)
+                assertNull(lessons[1].breakBefore)
+                assertEquals(expected, lessons[2].breakBefore)
+                assertEquals(if (expected == null) 3 else 2, timelineRowsThatFit(190, lessons))
+            }
+        }
+    }
+
+    @Test fun breaksResetOnTheNextDay() {
+        val week = Fixtures.week1()
+        val template = s.nextLessons(CLASS_A, mon.atTime(8, 45), 1).single().lesson
+        val first = template.copy(start = LocalTime.of(8, 30), end = LocalTime.of(12, 0))
+        val nextDay = first.copy(day = 1, end = LocalTime.of(9, 0))
+        val schedule = Schedule(listOf(week.copy(lessons = listOf(
+            first, first.copy(end = LocalTime.of(9, 0)), nextDay,
+            nextDay.copy(start = LocalTime.of(9, 15), end = LocalTime.of(10, 0)),
+        ))))
+        val lessons = (widgetContent(schedule, CLASS_A, mon.atTime(8, 45), 4)
+            as WidgetContent.Lessons).lessons
+        assertEquals(4, lessons.size)
+        assertTrue(lessons[2].newDay)
+        assertNull(lessons[2].breakBefore)
+        assertFalse(lessons[3].newDay)
+        assertEquals(BreakUi(15, BreakKind.BREAK), lessons[3].breakBefore)
+    }
+
     @Test fun timelineFitsLabelsAndRows() {
         val first = (widgetContent(s, CLASS_A, mon.atTime(9, 0), 1) as WidgetContent.Lessons).lessons.single()
         val gap = first.copy(breakBefore = breakBetween(LocalTime.of(10, 0), LocalTime.of(10, 15)))
