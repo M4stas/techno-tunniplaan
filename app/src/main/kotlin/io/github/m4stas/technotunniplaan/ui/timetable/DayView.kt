@@ -35,7 +35,7 @@ import java.time.LocalDate
         snapshotFlow { pager.settledPage }.collect { index -> currentState.days.getOrNull(index)?.let { selectDate(it.date) } }
     }
     LaunchedEffect(pager, state.selectedDate, dates) {
-        if (pager.currentPage != selectedIndex) pager.animateScrollToPage(selectedIndex, animationSpec = Motion.medium())
+        pager.animateScrollToPage(selectedIndex, animationSpec = Motion.medium())
     }
     PullToRefreshBox(state.refreshing, onRefresh, Modifier.fillMaxSize().testTag("day-list")) {
         HorizontalPager(pager, Modifier.fillMaxSize()) { index ->
