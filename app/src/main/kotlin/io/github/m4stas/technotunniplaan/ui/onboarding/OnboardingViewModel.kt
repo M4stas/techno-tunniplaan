@@ -9,12 +9,13 @@ import java.io.IOException
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-enum class Role { STUDENT, TEACHER }
+/** A class or teacher the user can pick as their timetable. */
+data class Choice(val ref: EntityRef, val entity: Entity)
 sealed interface OnboardingState {
     data object Loading : OnboardingState
     data object Offline : OnboardingState
-    data object ChooseRole : OnboardingState
-    data class Pick(val role: Role, val query: String, val results: List<Entity>) : OnboardingState
+    /** Classes first, then teachers, filtered by [query]. */
+    data class Pick(val query: String, val results: List<Choice>) : OnboardingState
 }
 class OnboardingViewModel(private val sync: SyncEngine, private val repository: TimetableRepository, private val settings: SettingsStore) : ViewModel() {
     private val mutableState = MutableStateFlow<OnboardingState>(OnboardingState.Loading)
@@ -35,21 +36,22 @@ class OnboardingViewModel(private val sync: SyncEngine, private val repository: 
             } catch (e: IOException) {
                 // The cache or the settings could not be written. Offline lets the user retry.
             }
-            mutableState.value = if (repository.weeks.value.orEmpty().isEmpty()) OnboardingState.Offline else OnboardingState.ChooseRole
+            if (repository.weeks.value.orEmpty().isEmpty()) mutableState.value = OnboardingState.Offline else show("")
         }
     }
     fun retry() { if (state.value != OnboardingState.Loading) load(force = true) }
-    fun chooseRole(role: Role) { show(role, "") }
-    private fun show(role: Role, query: String) {
-        val kind = if (role == Role.STUDENT) EntityKind.CLASS else EntityKind.TEACHER
-        mutableState.value = OnboardingState.Pick(role, query, searchEntities(Schedule(repository.weeks.value.orEmpty()).entities(kind), query))
+    private fun show(query: String) {
+        val schedule = Schedule(repository.weeks.value.orEmpty())
+        val results = listOf(EntityKind.CLASS, EntityKind.TEACHER).flatMap { kind ->
+            searchEntities(schedule.entities(kind), query).map { Choice(EntityRef(kind, it.key), it) }
+        }
+        mutableState.value = OnboardingState.Pick(query, results)
     }
-    fun setQuery(query: String) { (state.value as? OnboardingState.Pick)?.let { show(it.role, query) } }
-    fun back() { mutableState.value = OnboardingState.ChooseRole }
-    fun pick(entity: Entity) {
+    fun setQuery(query: String) { if (state.value is OnboardingState.Pick) show(query) }
+    fun pick(choice: Choice) {
         val pick = state.value as? OnboardingState.Pick ?: return
-        if (entity !in pick.results) return
-        val ref = EntityRef(if (pick.role == Role.STUDENT) EntityKind.CLASS else EntityKind.TEACHER, entity.key)
+        if (choice !in pick.results) return
+        val ref = choice.ref
         viewModelScope.launch {
             try {
                 settings.update { it.withHome(ref) }

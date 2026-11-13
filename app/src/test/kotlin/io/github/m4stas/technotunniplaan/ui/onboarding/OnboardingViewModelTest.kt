@@ -36,19 +36,19 @@ class OnboardingViewModelTest {
             assertEquals(OnboardingState.Offline, vm.settled())
             api.failure = null
             vm.retry()
-            assertEquals(OnboardingState.ChooseRole, vm.settled())
-            vm.chooseRole(Role.STUDENT)
-            assertEquals(listOf("K-XX-24A", "K-XX-24B"), (vm.state.value as OnboardingState.Pick).results.map { it.name })
+            val all = (vm.settled() as OnboardingState.Pick).results
+            assertEquals(listOf(EntityKind.CLASS, EntityKind.CLASS), all.take(2).map { it.ref.kind })
+            assertEquals(listOf("K-XX-24A", "K-XX-24B"), all.take(2).map { it.entity.name })
+            assertTrue(all.any { it.ref == Fixtures.MARI })
             vm.setQuery("24b")
-            assertEquals(listOf("K-XX-24B"), (vm.state.value as OnboardingState.Pick).results.map { it.name })
-            vm.back(); assertEquals(OnboardingState.ChooseRole, vm.state.value)
-            vm.chooseRole(Role.TEACHER)
-            vm.pick(Entity("mari näidis", "Mari Näidis", "MN"))
+            assertEquals(listOf("K-XX-24B"), (vm.state.value as OnboardingState.Pick).results.map { it.entity.name })
+            vm.setQuery("mari")
+            vm.pick((vm.state.value as OnboardingState.Pick).results.single())
             assertEquals(Fixtures.MARI, vm.picked.first { it != null })
             assertEquals(Fixtures.MARI, settings.settings.first().home)
             api.requested.clear(); api.requestedYear = null; api.failure = IOException()
             val cached = OnboardingViewModel(sync, repository, settings)
-            assertEquals(OnboardingState.ChooseRole, cached.settled())
+            assertTrue(cached.settled() is OnboardingState.Pick)
             assertNull(api.requestedYear)
             assertTrue(api.requested.isEmpty())
         } finally { Dispatchers.resetMain() }
@@ -86,7 +86,7 @@ class OnboardingViewModelTest {
             val vm = OnboardingViewModel(sync, repository, settings)
             advanceUntilIdle()
             gate.complete(Unit)
-            assertEquals(OnboardingState.ChooseRole, vm.settled())
+            assertTrue(vm.settled() is OnboardingState.Pick)
             appSync.await()
             assertEquals(listOf("22"), api.requested)
         } finally { Dispatchers.resetMain() }
@@ -101,11 +101,10 @@ class OnboardingViewModelTest {
             val api = FakeApi(EduPageDecoder.decodeViewer(Fixtures.text("viewer.json")), mutableMapOf("22" to Fixtures.raw()))
             val sync = SyncEngine(api, repository, settings, Clock.fixed(Instant.parse("2026-11-10T08:00:00Z"), SCHOOL_ZONE))
             val vm = OnboardingViewModel(sync, repository, settings)
-            assertEquals(OnboardingState.ChooseRole, vm.settled())
-            vm.chooseRole(Role.TEACHER)
-            val list = vm.state.value
+            assertTrue(vm.settled() is OnboardingState.Pick)
+            val list = vm.state.value as OnboardingState.Pick
             store.failing = true
-            vm.pick(Entity("mari näidis", "Mari Näidis", "MN"))
+            vm.pick(list.results.first { it.ref == Fixtures.MARI })
             store.attempted.await()
             advanceUntilIdle()
             assertNull(vm.picked.value)
@@ -124,7 +123,7 @@ class OnboardingViewModelTest {
             val api = FakeApi(EduPageDecoder.decodeViewer(Fixtures.text("viewer.json")), mutableMapOf("22" to Fixtures.raw()))
             val sync = SyncEngine(api, repository, settings, Clock.fixed(now, SCHOOL_ZONE))
             val vm = OnboardingViewModel(sync, repository, settings)
-            assertEquals(OnboardingState.ChooseRole, vm.settled())
+            assertTrue(vm.settled() is OnboardingState.Pick)
             assertEquals(listOf("22"), api.requested)
         } finally { Dispatchers.resetMain() }
     }

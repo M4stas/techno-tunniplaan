@@ -1,6 +1,12 @@
 package io.github.m4stas.technotunniplaan.ui.timetable
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
+import io.github.m4stas.technotunniplaan.ui.theme.Motion
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -23,6 +29,8 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 
 private const val SEPARATOR = " · "
+private val bannerIn = expandVertically(Motion.medium()) + fadeIn(Motion.enter())
+private val bannerOut = shrinkVertically(Motion.fast()) + fadeOut(Motion.fast())
 
 @Composable fun TimetableScreen(state: TimetableUiState, onSelectDate: (LocalDate) -> Unit, onRefresh: () -> Unit,
     onToggleFavourite: () -> Unit, onOpenEntity: (EntityRef) -> Unit, onPickAgain: () -> Unit) {
@@ -36,6 +44,8 @@ private const val SEPARATOR = " · "
     val date = state.selectedDate
     val monday = date?.with(DayOfWeek.MONDAY)
     val weekDays = state.days.map { it.date }.filter { it.with(DayOfWeek.MONDAY) == monday }
+    val pager = rememberDayPager(state)
+    val weekStart = state.days.indexOfFirst { it.date == weekDays.firstOrNull() }
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             if (date != null) {
@@ -58,15 +68,20 @@ private const val SEPARATOR = " · "
                     PrimaryButton(stringResource(R.string.pick_again), onPickAgain)
                 }
             } else {
-                if (state.weekIsOutdated) Text(stringResource(R.string.week_outdated), Modifier.padding(horizontal = 20.dp, vertical = 2.dp), color = p.textMuted, fontSize = 12.sp)
-                if (state.syncError != null) Text(stringResource(R.string.update_failed), Modifier.testTag("banner-sync-error").padding(horizontal = 20.dp, vertical = 2.dp), color = p.error, fontSize = 12.sp)
-                DayView(state, onSelectDate, onRefresh) { openSlot = it }
+                AnimatedVisibility(state.weekIsOutdated, enter = bannerIn, exit = bannerOut) {
+                    Text(stringResource(R.string.week_outdated), Modifier.padding(horizontal = 20.dp, vertical = 2.dp), color = p.textMuted, fontSize = 12.sp)
+                }
+                AnimatedVisibility(state.syncError != null, enter = bannerIn, exit = bannerOut) {
+                    Text(stringResource(R.string.update_failed), Modifier.testTag("banner-sync-error").padding(horizontal = 20.dp, vertical = 2.dp), color = p.error, fontSize = 12.sp)
+                }
+                DayView(state, onSelectDate, onRefresh, { openSlot = it }, pager)
             }
         }
         IslandFade(Modifier.align(Alignment.BottomCenter))
         // 84dp keeps the day island clear of the navigation island that AppShell draws below it.
         if (!state.entityMissing && weekDays.isNotEmpty()) {
-            ThumbDays(weekDays, date, onSelectDate, Modifier.align(Alignment.BottomCenter).padding(bottom = 84.dp))
+            ThumbDays(weekDays, date, state.today, onSelectDate, Modifier.align(Alignment.BottomCenter).padding(bottom = 84.dp),
+                position = { pager.currentPage + pager.currentPageOffsetFraction - weekStart })
         }
     }
 }

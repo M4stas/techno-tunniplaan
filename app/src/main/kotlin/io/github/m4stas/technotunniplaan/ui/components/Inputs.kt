@@ -1,5 +1,8 @@
 package io.github.m4stas.technotunniplaan.ui.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.runtime.getValue
+import io.github.m4stas.technotunniplaan.ui.theme.Motion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
@@ -55,13 +58,15 @@ data class SegmentOption<out T>(val value: T, val label: String, val description
         options.forEach { option ->
             val active = option.value == selected
             val described = option.description
+            val fill by animateColorAsState(if (active) p.selected else p.track, Motion.fast(), label = "segment-fill")
+            val ink by animateColorAsState(if (active) p.onSelected else p.textSecondary, Motion.fast(), label = "segment-ink")
             Box((if (compact) Modifier else Modifier.weight(1f))
-                .heightIn(min = if (compact) 40.dp else 44.dp).clip(CircleShape).background(if (active) p.selected else p.track)
+                .heightIn(min = if (compact) 40.dp else 44.dp).clip(CircleShape).background(fill)
                 .selectable(active, role = Role.RadioButton, onClick = { onSelect(option.value) })
                 .then(if (described != null) Modifier.semantics { contentDescription = described } else Modifier)
                 .padding(horizontal = if (compact) 14.dp else 8.dp), contentAlignment = Alignment.Center) {
                 Text(option.label, if (described != null) Modifier.clearAndSetSemantics { } else Modifier,
-                    color = if (active) p.onSelected else p.textSecondary, fontSize = 13.sp,
+                    color = ink, fontSize = 13.sp,
                     fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium, maxLines = 1)
             }
         }

@@ -29,13 +29,19 @@ import androidx.lifecycle.repeatOnLifecycle
 import java.io.IOException
 import java.net.URLEncoder
 
-import android.app.Activity
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import androidx.core.view.WindowCompat
 import androidx.compose.ui.platform.LocalView
 import io.github.m4stas.technotunniplaan.ui.settings.*
 import io.github.m4stas.technotunniplaan.ui.components.IslandFade
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.navigation.NavBackStackEntry
 
 object Routes {
     const val ONBOARDING = "onboarding"
@@ -70,12 +76,11 @@ object Routes {
         val view = LocalView.current
         val light = LocalPalette.current != DarkPalette
         SideEffect {
-            (view.context as? Activity)?.window?.let { window ->
-                WindowCompat.getInsetsController(window, view).apply {
-                    isAppearanceLightStatusBars = light
-                    isAppearanceLightNavigationBars = light
-                }
-            }
+            // Transparent bars let the app background show behind them, and fixing the style to the app's theme
+            // rather than the system's stops Android adding its own scrim or picking the wrong icon colour.
+            val transparent = android.graphics.Color.TRANSPARENT
+            val style = if (light) SystemBarStyle.light(transparent, transparent) else SystemBarStyle.dark(transparent)
+            (view.context as? ComponentActivity)?.enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
         }
         Surface(Modifier.fillMaxSize(), color = LocalPalette.current.background) {
             val loaded = settings
@@ -118,7 +123,7 @@ object Routes {
                             nav.popBackStack()
                         }
                     }
-                    OnboardingScreen(state, vm::chooseRole, vm::back, vm::setQuery, vm::pick, vm::retry)
+                    OnboardingScreen(state, vm::setQuery, vm::pick, vm::retry)
                 }
             }
         }
@@ -150,22 +155,49 @@ object Routes {
         }
     }
     Box(Modifier.fillMaxSize().safeDrawingPadding()) {
-        NavHost(nav, startDestination = start, modifier = Modifier.fillMaxSize()) {
+        NavHost(nav, startDestination = start, modifier = Modifier.fillMaxSize(),
+            enterTransition = { screenEnter(initialState, targetState) }, exitTransition = { screenExit(initialState, targetState) },
+            popEnterTransition = { screenEnter(initialState, targetState, pop = true) }, popExitTransition = { screenExit(initialState, targetState, pop = true) }) {
             composable(Routes.ONBOARDING) { onboarding(nav) }
             composable(Routes.HOME) { timetable(null, nav) }
-            composable(Routes.BROWSE) { browse(nav) }
-            composable(Routes.SETTINGS) { settings(nav) }
+            // Browse and settings carry the fade inside the destination, as the timetable does, so it crossfades
+            // with its screen instead of vanishing while the next screen's fade is still animating in.
+            composable(Routes.BROWSE) { Box(Modifier.fillMaxSize()) { browse(nav); IslandFade(Modifier.align(Alignment.BottomCenter)) } }
+            composable(Routes.SETTINGS) { Box(Modifier.fillMaxSize()) { settings(nav); IslandFade(Modifier.align(Alignment.BottomCenter)) } }
             composable("entity/{kind}/{key}") { entry ->
                 val kind = entry.arguments?.getString("kind")?.let(EntityKind::valueOf)
                 val key = entry.arguments?.getString("key")
                 if (kind != null && key != null) timetable(EntityRef(kind, key), nav)
             }
         }
-        val route = entry?.destination?.route
-        if (route != Routes.ONBOARDING) {
-            if (route != Routes.HOME && route != "entity/{kind}/{key}") IslandFade(Modifier.align(Alignment.BottomCenter))
-            NavIsland(route, { target -> nav.navigate(target) { popUpTo(Routes.HOME); launchSingleTop = true } },
-                Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
+        val route = entry?.destination?.route ?: start
+        // Keeps the last tab highlighted while the island slides away for onboarding.
+        var lastTab by remember { mutableStateOf(route) }
+        if (route != Routes.ONBOARDING) lastTab = route
+        AnimatedVisibility(route != Routes.ONBOARDING, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp),
+            enter = fadeIn(Motion.enter()) + slideInVertically(Motion.offset) { it / 2 },
+            exit = fadeOut(Motion.fast()) + slideOutVertically(Motion.offset) { it / 2 }) {
+            NavIsland(lastTab, { target -> nav.navigate(target) { popUpTo(Routes.HOME); launchSingleTop = true } })
         }
     }
 }
+
+private const val ENTITY_ROUTE = "entity/{kind}/{key}"
+
+/** An entity timetable opens over the screen it came from; everything else is a quick fade between peers. */
+private fun opensEntity(from: NavBackStackEntry, to: NavBackStackEntry, pop: Boolean) =
+    (if (pop) from else to).destination.route == ENTITY_ROUTE
+
+private fun screenEnter(from: NavBackStackEntry, to: NavBackStackEntry, pop: Boolean = false): EnterTransition =
+    if (opensEntity(from, to, pop)) {
+        fadeIn(Motion.enter()) + slideInHorizontally(Motion.offset) { if (pop) -it / 8 else it / 8 }
+    } else {
+        fadeIn(tween(Motion.MEDIUM, delayMillis = 60, easing = LinearOutSlowInEasing)) + scaleIn(Motion.enter(), initialScale = 0.98f)
+    }
+
+private fun screenExit(from: NavBackStackEntry, to: NavBackStackEntry, pop: Boolean = false): ExitTransition =
+    if (opensEntity(from, to, pop)) {
+        fadeOut(Motion.fast()) + slideOutHorizontally(Motion.offset) { if (pop) it / 8 else -it / 8 }
+    } else {
+        fadeOut(tween(90, easing = FastOutLinearInEasing))
+    }

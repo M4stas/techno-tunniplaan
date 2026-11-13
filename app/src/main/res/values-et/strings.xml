@@ -1,10 +1,6 @@
 <resources>
     <string name="app_name">Techno tunniplaan</string>
-    <string name="onboarding_title">Kelle tunniplaan?</string>
-    <string name="role_student">Olen õpilane</string>
-    <string name="role_teacher">Olen õpetaja</string>
-    <string name="pick_class">Vali oma klass</string>
-    <string name="pick_teacher">Vali oma nimi</string>
+    <string name="select_timetable">Vali tunniplaan</string>
     <string name="search">Otsi</string>
     <string name="offline_title">Tunniplaani ei saa laadida</string>
     <string name="offline_body">Kontrolli internetiühendust. Viimati salvestatud tunniplaani pole veel.</string>

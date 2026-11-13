@@ -1,6 +1,7 @@
 package io.github.m4stas.technotunniplaan.ui.onboarding
 
-import androidx.activity.compose.BackHandler
+import androidx.compose.animation.*
+import io.github.m4stas.technotunniplaan.ui.theme.Motion
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,36 +12,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.m4stas.technotunniplaan.R
-import io.github.m4stas.technotunniplaan.schedule.Entity
+import io.github.m4stas.technotunniplaan.schedule.EntityKind
 import io.github.m4stas.technotunniplaan.ui.theme.LocalPalette
 
-@Composable fun OnboardingScreen(state: OnboardingState, onRole: (Role) -> Unit, onBack: () -> Unit, onQuery: (String) -> Unit, onPick: (Entity) -> Unit, onRetry: () -> Unit) {
+@Composable fun OnboardingScreen(state: OnboardingState, onQuery: (String) -> Unit, onPick: (Choice) -> Unit, onRetry: () -> Unit) {
     val p = LocalPalette.current
-    BackHandler(state is OnboardingState.Pick, onBack)
     Surface(Modifier.fillMaxSize(), color = p.background) {
-        Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            when (state) {
-                OnboardingState.Loading -> CircularProgressIndicator(color = p.accentText)
-                OnboardingState.Offline -> {
-                    Text(stringResource(R.string.offline_title), style = MaterialTheme.typography.headlineMedium, color = p.text)
-                    Text(stringResource(R.string.offline_body), color = p.textSecondary)
-                    Button(onRetry) { Text(stringResource(R.string.retry)) }
-                }
-                OnboardingState.ChooseRole -> {
-                    Text(stringResource(R.string.onboarding_title), style = MaterialTheme.typography.headlineMedium, color = p.text)
-                    Role.entries.forEach { role ->
-                        Card(onClick = { onRole(role) }, shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = p.card)) {
-                            Text(stringResource(if (role == Role.STUDENT) R.string.role_student else R.string.role_teacher), Modifier.fillMaxWidth().padding(24.dp), color = p.text)
-                        }
+        // Loading, offline and the picker fade into each other; typing a query only updates the picker.
+        AnimatedContent(state, contentKey = { it::class }, label = "onboarding",
+            transitionSpec = { fadeIn(Motion.enter()) togetherWith fadeOut(Motion.fast()) }) { state ->
+            Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                when (state) {
+                    OnboardingState.Loading -> CircularProgressIndicator(color = p.accentText)
+                    OnboardingState.Offline -> {
+                        Text(stringResource(R.string.offline_title), style = MaterialTheme.typography.headlineMedium, color = p.text)
+                        Text(stringResource(R.string.offline_body), color = p.textSecondary)
+                        Button(onRetry) { Text(stringResource(R.string.retry)) }
                     }
-                }
-                is OnboardingState.Pick -> {
-                    Text(stringResource(if (state.role == Role.STUDENT) R.string.pick_class else R.string.pick_teacher), style = MaterialTheme.typography.headlineMedium, color = p.text)
-                    OutlinedTextField(state.query, onQuery, label = { Text(stringResource(R.string.search)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(24.dp))
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(state.results, key = { it.key }) { entity ->
-                            Card(onClick = { onPick(entity) }, shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = p.card)) {
-                                Text(entity.name, Modifier.fillMaxWidth().padding(20.dp), color = p.text)
+                    is OnboardingState.Pick -> {
+                        Text(stringResource(R.string.select_timetable), style = MaterialTheme.typography.headlineMedium, color = p.text)
+                        OutlinedTextField(state.query, onQuery, label = { Text(stringResource(R.string.search)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(24.dp))
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(state.results, key = { "${it.ref.kind}/${it.ref.key}" }) { choice ->
+                                Card(onClick = { onPick(choice) }, shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = p.card)) {
+                                    Row(Modifier.fillMaxWidth().padding(20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Text(choice.entity.name, Modifier.weight(1f), color = p.text)
+                                        Text(stringResource(if (choice.ref.kind == EntityKind.CLASS) R.string.kind_class else R.string.kind_teacher), color = p.textSecondary)
+                                    }
+                                }
                             }
                         }
                     }
