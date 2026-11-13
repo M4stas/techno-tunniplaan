@@ -1,4 +1,5 @@
 package io.github.m4stas.technotunniplaan.ui.timetable
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -14,6 +15,7 @@ import org.junit.*
 import org.junit.Assert.*
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 @RunWith(RobolectricTestRunner::class)
@@ -46,6 +48,34 @@ class DayViewTest {
      compose.runOnIdle {
          assertEquals(2, pager.currentPage)
          assertEquals(0f, pager.currentPageOffsetFraction, 0.001f)
+     }
+ }
+ @Test fun lateSelectionOfSettledPageKeepsNextSwipe() {
+     val initial = state()
+     val selected = mutableStateOf(initial.selectedDate)
+     lateinit var pager: PagerState
+     lateinit var scope: CoroutineScope
+     compose.setContent {
+         AppTheme(ThemeMode.DARK) {
+             val current = initial.copy(selectedDate = selected.value)
+             pager = rememberDayPager(current)
+             scope = rememberCoroutineScope()
+             DayView(current, {}, {}, pager = pager)
+         }
+     }
+     compose.runOnIdle { scope.launch { pager.scrollToPage(1) } }
+     compose.waitForIdle()
+     val release = CompletableDeferred<Unit>()
+     // Stands in for the fling of a second swipe, which scrolls at default priority.
+     val swipe = compose.runOnIdle { scope.launch { pager.scroll { scrollBy(pager.layoutInfo.pageSize * 0.4f); release.await() } } }
+     compose.waitForIdle()
+     // The date from the first swipe reaches the state while the second swipe is moving.
+     compose.runOnIdle { selected.value = initial.days[1].date }
+     compose.waitForIdle()
+     compose.runOnIdle {
+         assertFalse("second swipe was interrupted", swipe.isCancelled)
+         assertTrue(pager.currentPageOffsetFraction > 0.3f)
+         release.complete(Unit)
      }
  }
  @Test fun lessons() {
