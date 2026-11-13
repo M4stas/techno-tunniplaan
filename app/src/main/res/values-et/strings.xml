@@ -13,7 +13,6 @@
     <string name="update_failed">Tunniplaani uuendamine ebaõnnestus.</string>
     <string name="last_synced">Uuendatud %1$s</string>
     <string name="never_synced">Pole uuendatud</string>
-    <string name="sync_now">Uuenda kohe</string>
     <string name="entity_missing">Seda tunniplaani enam pole.</string>
     <string name="pick_again">Vali uuesti</string>
     <string name="tab_classes">Klassid</string>

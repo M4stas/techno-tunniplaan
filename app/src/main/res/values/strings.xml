@@ -13,7 +13,6 @@
     <string name="update_failed">Couldn\'t update the timetable.</string>
     <string name="last_synced">Updated %1$s</string>
     <string name="never_synced">Never updated</string>
-    <string name="sync_now">Update now</string>
     <string name="entity_missing">This timetable no longer exists.</string>
     <string name="pick_again">Pick again</string>
     <string name="tab_classes">Classes</string>
