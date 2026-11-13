@@ -93,10 +93,11 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
 @Composable private fun EntryRows(entries: List<LessonText>, colors: WidgetColors, size: Int,
     whoColor: ColorProvider, placeColor: ColorProvider) {
     entries.forEachIndexed { index, entry ->
+        val place = entry.place.trim()
         if (index > 0) Spacer(GlanceModifier.fillMaxWidth().height(1.dp).background(colors.cardOutline))
         Row(GlanceModifier.fillMaxWidth().height(23.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(GlanceModifier.defaultWeight()) { Label(entry.who, size, whoColor) }
-            if (entry.place.isNotBlank()) { Spacer(GlanceModifier.width(8.dp)); Label(entry.place, size, placeColor) }
+            Column(GlanceModifier.defaultWeight()) { Label(entry.who.trim(), size, whoColor) }
+            if (place.isNotBlank()) { Spacer(GlanceModifier.width(8.dp)); Label(place, size, placeColor) }
         }
     }
 }
@@ -144,8 +145,8 @@ private fun GlanceModifier.shape(drawable: Int, color: ColorProvider) =
                 Row(GlanceModifier.fillMaxSize().shape(R.drawable.widget_slim_14, colors.widgetCard).padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                     Label(second.start.format(timeFormat), 13, colors.textSecondary)
                     Spacer(GlanceModifier.width(10.dp))
-                    val places = second.entries.map { it.place }.filter { it.isNotBlank() }.distinct().joinToString(", ")
-                    val who = second.entries.map { it.who }.filter { it.isNotBlank() }.distinct().joinToString(", ")
+                    val places = second.entries.map { it.place.trim() }.filter { it.isNotBlank() }.distinct().joinToString(", ")
+                    val who = second.entries.map { it.who.trim() }.filter { it.isNotBlank() }.distinct().joinToString(", ")
                     Column(GlanceModifier.defaultWeight()) { Label(second.entries.map { it.title }.distinct().joinToString(" / "), 13, colors.text) }
                     if (!narrow) Label(if (second.entries.size == 1 && LocalSize.current.width.value >= 330) listOf(who, places).filter { it.isNotBlank() }.joinToString(" · ") else places, 12, colors.textMuted)
                 }
