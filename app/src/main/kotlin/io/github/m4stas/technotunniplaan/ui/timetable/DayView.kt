@@ -35,6 +35,9 @@ import java.time.LocalDate
         snapshotFlow { pager.settledPage }.collect { index -> currentState.days.getOrNull(index)?.let { selectDate(it.date) } }
     }
     LaunchedEffect(pager, state.selectedDate, dates) {
+        // A swipe reports its settled page, and the date comes back a frame or more later. By then the next
+        // swipe may already be flinging, and animating would cancel it and pull the pager back.
+        if (pager.isScrollInProgress && pager.settledPage == selectedIndex) return@LaunchedEffect
         pager.animateScrollToPage(selectedIndex, animationSpec = Motion.medium())
     }
     PullToRefreshBox(state.refreshing, onRefresh, Modifier.fillMaxSize().testTag("day-list")) {
