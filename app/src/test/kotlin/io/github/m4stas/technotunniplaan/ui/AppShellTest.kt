@@ -57,6 +57,18 @@ class AppShellTest {
         assertNull(compose.runOnIdle { nav.previousBackStackEntry })
     }
 
+    @Test fun tappingTheShownTabKeepsItsScreen() {
+        compose.setContent { Shell() }
+        for ((label, route) in listOf("Timetable" to Routes.HOME, "Browse" to Routes.BROWSE, "Settings" to Routes.SETTINGS)) {
+            if (route != Routes.HOME) tap(label)
+            val shown = compose.runOnIdle { nav.currentBackStackEntry?.id }
+            // A single-top navigate replaces the entry, and the new entry plays the screen transition again.
+            tap(label)
+            assertEquals(route, route())
+            assertEquals(shown, compose.runOnIdle { nav.currentBackStackEntry?.id })
+        }
+    }
+
     @Test fun launchAtHomeEntityShowsHome() {
         open = Fixtures.CLASS_A
         compose.setContent { Shell() }
