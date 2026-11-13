@@ -29,7 +29,7 @@ object WidgetUpdater {
         val now = LocalDateTime.now(container.clock)
         val next = ids.mapNotNull { id ->
             val config = getAppWidgetState(context, PreferencesGlanceStateDefinition, id).toWidgetConfig()
-            config.resolve(settings)?.let { nextRedrawAt(schedule.nextLessons(it, now, config.count), now) }
+            config.resolve(settings)?.let { nextRedrawAt(schedule.nextLessonSlots(it, now, config.count).flatten(), now) }
         }.minOrNull()
         val alarm = context.getSystemService(AlarmManager::class.java)
         val intent = PendingIntent.getBroadcast(context, 0, Intent(context, WidgetAlarmReceiver::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
