@@ -15,7 +15,7 @@ fun WidgetConfig.resolve(settings: Settings): EntityRef? = entity ?: settings.ho
 
 enum class WidgetLayout { SINGLE, NOW_NEXT, TIMELINE }
 fun widgetLayout(heightDp: Int): WidgetLayout = when {
-    heightDp < 100 -> WidgetLayout.SINGLE
+    heightDp < 170 -> WidgetLayout.SINGLE
     heightDp < 230 -> WidgetLayout.NOW_NEXT
     else -> WidgetLayout.TIMELINE
 }

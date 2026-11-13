@@ -59,7 +59,7 @@ class WidgetContentTest {
     }
 
     @Test fun layoutThresholds() {
-        assertEquals(listOf(WidgetLayout.SINGLE, WidgetLayout.NOW_NEXT, WidgetLayout.NOW_NEXT, WidgetLayout.TIMELINE), listOf(99, 100, 229, 230).map(::widgetLayout))
+        assertEquals(listOf(WidgetLayout.SINGLE, WidgetLayout.NOW_NEXT, WidgetLayout.NOW_NEXT, WidgetLayout.TIMELINE), listOf(169, 170, 229, 230).map(::widgetLayout))
         assertTrue(isNarrowWidget(239))
         assertFalse(isNarrowWidget(240))
     }
