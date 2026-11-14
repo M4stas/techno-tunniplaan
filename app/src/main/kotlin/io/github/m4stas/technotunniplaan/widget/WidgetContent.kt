@@ -80,7 +80,9 @@ fun timelineRowsThatFit(heightDp: Int, lessons: List<WidgetLesson>): Int {
 
 fun nextRedrawAt(upcoming: List<DatedLesson>, now: LocalDateTime): LocalDateTime? {
     val end = upcoming.minOfOrNull { it.endsAt } ?: return null
+    val start = upcoming.map { it.startsAt }.filter { it > now }.minOrNull()
+    val boundary = minOf(end, start ?: end)
     val midnight = now.toLocalDate().plusDays(1).atStartOfDay()
-    val next = if (upcoming.any { it.date > now.toLocalDate() } && midnight < end) midnight else end
+    val next = if (upcoming.any { it.date > now.toLocalDate() } && midnight < boundary) midnight else boundary
     return if (upcoming.any { now >= it.startsAt && now < it.endsAt }) minOf(next, now.plusMinutes(5)) else next
 }

@@ -50,6 +50,26 @@ class WidgetContentTest {
         assertEquals(MARI, WidgetConfig(MARI).resolve(Settings(home = CLASS_A)))
     }
 
+    @Test fun redrawsAtUpcomingStartThenUpdatesProgress() {
+        val before = mon.atTime(8, 20)
+        val start = mon.atTime(8, 30)
+        assertEquals(start, nextRedrawAt(s.nextLessonSlots(CLASS_A, before, 1).flatten(), before))
+        val current = widgetContent(s, CLASS_A, start, 1) as WidgetContent.Lessons
+        assertEquals(SlotStatus.CURRENT, current.lessons.single().status)
+        assertEquals(0f, current.lessons.single().progress, 0f)
+        assertEquals(mon.atTime(8, 35), nextRedrawAt(s.nextLessonSlots(CLASS_A, start, 1).flatten(), start))
+        val later = widgetContent(s, CLASS_A, mon.atTime(8, 35), 1) as WidgetContent.Lessons
+        assertEquals(1f / 18, later.lessons.single().progress, 0.001f)
+    }
+
+    @Test fun redrawsAtOverlappingStartBeforeProgressTick() {
+        val now = mon.atTime(9, 0)
+        val current = s.nextLessons(CLASS_A, now, 1).single()
+        val upcoming = DatedLesson(mon, current.lesson.copy(start = LocalTime.of(9, 2)))
+        assertEquals(mon.atTime(9, 2), nextRedrawAt(listOf(current, upcoming), now))
+        assertEquals(mon.atTime(9, 2), nextRedrawAt(listOf(upcoming, current), now))
+    }
+
     @Test fun redrawsWhenTheShorterOverlappingLessonEnds() {
         val lesson = s.nextLessons(CLASS_A, mon.atTime(9, 14), 1).single().lesson
         val long = DatedLesson(mon, lesson.copy(start = LocalTime.of(8, 30), end = LocalTime.of(10, 0)))
