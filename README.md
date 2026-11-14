@@ -32,7 +32,7 @@ telefonis ka ilma internetita ja näitab järgmisi tunde avaekraani vidinas.
 ## Paigaldamine
 
 1. Ava telefonis [viimane väljalase](https://github.com/M4stas/techno-tunniplaan/releases/latest).
-2. Laadi alla fail `techno-tunniplaan-1.0.0.apk`.
+2. Laadi väljalaske jaotisest **Assets** alla APK-fail.
 3. Ava allalaaditud fail. Kui Android küsib, luba brauseril rakendusi paigaldada.
 4. Vajuta **Paigalda** ja seejärel **Ava**.
 5. Vali oma klass või õpetaja. Ruumi tunniplaani vaatamiseks ava pärast seadistamist **Sirvi**.
