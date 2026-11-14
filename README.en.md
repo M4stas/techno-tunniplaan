@@ -32,7 +32,7 @@ on the phone for when you are offline and shows the next lessons in a home scree
 ## Install
 
 1. On your phone, open the [latest release](https://github.com/M4stas/techno-tunniplaan/releases/latest).
-2. Download `techno-tunniplaan-1.0.0.apk`.
+2. Download the APK file from the release's **Assets** section.
 3. Open the downloaded file. If Android asks, allow your browser to install apps.
 4. Tap **Install**, then **Open**.
 5. Pick your class or teacher. To view a room's timetable, open **Browse** after setup.

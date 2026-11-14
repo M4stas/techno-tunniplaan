@@ -55,4 +55,33 @@ Do not commit this file or its values. Back up the keystore and keep its credent
 
 Run `./gradlew assembleRelease` to build the APK in `app/build/outputs/apk/release/`. With no `TECHNO_RELEASE_STORE_FILE`, the output is `app-release-unsigned.apk`, which cannot be installed as-is. Setting that property enables signing and requires all three remaining properties. Missing properties fail Gradle configuration; an invalid key or credentials fails the release build. A successful signed build produces `app-release.apk`.
 
-Publishing is manual. The repository has no tag-triggered release workflow, and CI builds only a debug APK. After validation and promotion, attach the signed APK to the GitHub release as `techno-tunniplaan-<version>.apk`, using the version without a leading `v`. The installation instructions in [README.md](../README.md#paigaldamine) and its [English translation](../README.en.md#install) refer to this asset name.
+The release asset is named `techno-tunniplaan-<version>.apk`, with the version written without a leading `v`. For installation steps, see [README.md](../README.md#paigaldamine) and its [English translation](../README.en.md#install).
+
+## Release workflow
+
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) publishes a GitHub release when a tag matching `v*` is pushed. It runs the JVM unit tests, builds the signed release APK, checks the signature with `apksigner` and creates the release with notes generated from the merged pull requests.
+
+Tags must use `vMAJOR.MINOR.PATCH`, optionally followed by a hyphen and a suffix containing letters, digits or dots. The workflow removes the leading `v` for `versionName` and calculates `versionCode` as `major * 10000 + minor * 100 + patch`. For example, `v1.2.3` builds `versionName` `1.2.3` and `versionCode` `10203`. Minor and patch must stay at 99 or lower. Rerunning the same tag keeps the same version values.
+
+A stable tag must point at a commit reachable from `main`. A tag with a suffix, such as `v1.1.0-beta.1`, becomes a GitHub pre-release and must point at a commit reachable from `dev` or `main`. The commit need not be the branch tip. A pre-release shares its `versionCode` with the stable version it precedes.
+
+The repository owner must create the keystore and set the four repository secrets. Agents must never handle the signing passwords. Set the secrets once with the GitHub CLI, from the directory that holds the keystore:
+
+```sh
+base64 -i release.jks | gh secret set TECHNO_RELEASE_KEYSTORE_BASE64 --repo M4stas/techno-tunniplaan
+gh secret set TECHNO_RELEASE_STORE_PASSWORD --repo M4stas/techno-tunniplaan
+gh secret set TECHNO_RELEASE_KEY_ALIAS --repo M4stas/techno-tunniplaan
+gh secret set TECHNO_RELEASE_KEY_PASSWORD --repo M4stas/techno-tunniplaan
+```
+
+Each `gh secret set` without input prompts for the value, so it stays out of shell history. The workflow fails before building when any secret is missing.
+
+To publish, merge the release pull request into `main`, then tag the merge commit:
+
+```sh
+git fetch origin
+git tag v1.0.0 origin/main
+git push origin v1.0.0
+```
+
+Follow the run under the repository's Actions tab. If it fails, delete the tag with `git push origin :refs/tags/v1.0.0` and `git tag -d v1.0.0`, fix the cause and tag again.
