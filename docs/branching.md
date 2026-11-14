@@ -34,6 +34,25 @@ Create a `release/*` branch from the validated `dev` commit, then run no-mistake
 
 CI runs on pull requests into either branch and on pushes after merges. The required `build-test` job runs Android lint, JVM unit tests and a debug APK build with JDK 21. A failed step blocks the merge.
 
-Passing CI does not verify every device interaction. Before promoting app behavior changes, complete the applicable emulator checks in `docs/agent-policy.md`. Keep screenshots and real timetable data out of the repository.
+Passing CI does not verify every device interaction. Before promoting app behavior changes, complete the applicable emulator checks in `docs/agent-policy.md`. Keep real timetable data and screenshots containing it out of the repository. README screenshots must use invented data.
 
 After a release, synchronize `main` back into `dev` through a pull request if the release introduced fixes that are missing from `dev`.
+
+## Building and publishing a release APK
+
+Read the execution restrictions in [Device testing](agent-policy.md#device-testing) before building. The version defaults and signing configuration are defined in [app/build.gradle.kts](../app/build.gradle.kts). Override the version with `-PversionName=<version>` and `-PversionCode=<integer>` when needed. Increase `versionCode` for subsequent published updates.
+
+Release signing reads Gradle properties. Keep the keystore outside the repository and put these entries in your Gradle user properties file, normally `~/.gradle/gradle.properties`:
+
+```properties
+TECHNO_RELEASE_STORE_FILE=/absolute/path/to/release.jks
+TECHNO_RELEASE_STORE_PASSWORD=<store-password>
+TECHNO_RELEASE_KEY_ALIAS=<key-alias>
+TECHNO_RELEASE_KEY_PASSWORD=<key-password>
+```
+
+Do not commit this file or its values. Back up the keystore and keep its credentials safe. Updates must use the same signing key to preserve installed app data.
+
+Run `./gradlew assembleRelease` to build the APK in `app/build/outputs/apk/release/`. With no `TECHNO_RELEASE_STORE_FILE`, the output is `app-release-unsigned.apk`, which cannot be installed as-is. Setting that property enables signing and requires all three remaining properties. Missing properties fail Gradle configuration; an invalid key or credentials fails the release build. A successful signed build produces `app-release.apk`.
+
+Publishing is manual. The repository has no tag-triggered release workflow, and CI builds only a debug APK. After validation and promotion, attach the signed APK to the GitHub release as `techno-tunniplaan-<version>.apk`, using the version without a leading `v`. The installation instructions in [README.md](../README.md#paigaldamine) and its [English translation](../README.en.md#install) refer to this asset name.
