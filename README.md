@@ -37,7 +37,8 @@ telefonis ka ilma internetita ja näitab järgmisi tunde avaekraani vidinas.
 4. Vajuta **Paigalda** ja seejärel **Ava**.
 5. Vali oma klass või õpetaja. Ruumi tunniplaani vaatamiseks ava pärast seadistamist **Sirvi**.
 
-Uue versiooni paigaldad samamoodi vana peale. Seaded jäävad alles.
+Uue versiooni paigaldad samamoodi vana peale. Sama võtmega allkirjastatud uuenduse
+korral jäävad seaded alles. Väljalase ei saa asendada teise võtmega allkirjastatud silumisversiooni.
 
 ## Vidina lisamine
 

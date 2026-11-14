@@ -37,7 +37,8 @@ on the phone for when you are offline and shows the next lessons in a home scree
 4. Tap **Install**, then **Open**.
 5. Pick your class or teacher. To view a room's timetable, open **Browse** after setup.
 
-Install a new version the same way, over the old one. Your settings stay.
+Install a new version the same way, over the old one. Updates signed with the same
+key preserve your settings. A release cannot replace a debug build signed with a different key.
 
 ## Add the widget
 
