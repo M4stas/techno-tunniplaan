@@ -66,10 +66,10 @@ The tag sets the version. `v1.2.3` builds `versionName` `1.2.3` and `versionCode
 The workflow reads four repository secrets. Set them once with the GitHub CLI, from the directory that holds the keystore:
 
 ```sh
-base64 -i release.jks | gh secret set TECHNO_RELEASE_KEYSTORE_BASE64
-gh secret set TECHNO_RELEASE_STORE_PASSWORD
-gh secret set TECHNO_RELEASE_KEY_ALIAS
-gh secret set TECHNO_RELEASE_KEY_PASSWORD
+base64 -i release.jks | gh secret set TECHNO_RELEASE_KEYSTORE_BASE64 --repo M4stas/techno-tunniplaan
+gh secret set TECHNO_RELEASE_STORE_PASSWORD --repo M4stas/techno-tunniplaan
+gh secret set TECHNO_RELEASE_KEY_ALIAS --repo M4stas/techno-tunniplaan
+gh secret set TECHNO_RELEASE_KEY_PASSWORD --repo M4stas/techno-tunniplaan
 ```
 
 Each `gh secret set` without input prompts for the value, so it stays out of shell history. The workflow fails before building when any secret is missing.
