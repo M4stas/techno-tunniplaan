@@ -1,0 +1,121 @@
+<!doctype html><html lang="et"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tunni detailid (dark)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);font-family:'Inter Tight',system-ui,sans-serif;color:var(--ink);
+ display:flex;flex-direction:column;align-items:center;gap:14px;padding:28px 16px}
+.cap{font:600 12px/1 'Inter Tight',system-ui;letter-spacing:.08em;text-transform:uppercase;color:#888}
+.phone{position:relative;width:360px;height:780px;background:var(--bg);border-radius:44px;overflow:hidden;
+ box-shadow:0 0 0 10px #0a0a0a,0 30px 60px rgba(0,0,0,.35)}
+.sb{height:36px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font:600 13px/1 system-ui;color:var(--status)}
+.scroll{position:absolute;top:36px;left:0;right:0;bottom:0;overflow:hidden;padding:10px 20px 0}
+svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.05}
+.hsub{font-size:13px;color:var(--muted);margin-top:6px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.circ{width:40px;height:40px;border-radius:50%;background:var(--circle);border:1px solid var(--rowLine);display:grid;place-items:center;color:var(--ink)}
+.circ.on{background:var(--lime);color:#000;border-color:var(--lime)}
+.circ.on svg{fill:#000}
+.tl{margin-top:20px}
+.row{display:flex;gap:12px;align-items:stretch}
+.tc{width:46px;flex:none;padding-top:14px;font-size:12px;color:var(--time);font-variant-numeric:tabular-nums}
+.tc b{display:block;font-weight:500}
+.tc i{display:block;font-style:normal;color:var(--timeEnd);margin-top:3px}
+.card{flex:1;position:relative;overflow:hidden;background:var(--card);border:1px solid var(--cardLine);border-radius:20px;padding:13px 16px}
+.card .t{font-size:16px;font-weight:600;letter-spacing:-.01em;position:relative}
+.card .s{font-size:12px;color:var(--sub);margin-top:3px;position:relative}
+.past{opacity:.4}
+.cur .card{background:var(--cur);border-color:var(--curLine)}
+.cur .card::before{content:'';position:absolute;inset:0;width:var(--p);background:var(--tint)}
+.cur .card .t{color:var(--acc)}
+.cur .card .s,.cur .card .pl{color:var(--subCur)}
+.cur .tc b{color:var(--acc)} .cur .tc i{color:var(--acc2)}
+.brk{font-size:11px;color:var(--brk);padding:7px 0 7px 58px}
+.pl{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--sub);margin-top:6px;position:relative}
+.pl em{font-style:normal;font-weight:600;color:var(--ink)}
+.pl+.pl{padding-top:6px;border-top:1px solid var(--cardLine)}
+.dark .pl+.pl{border-top-color:#1c1c1c}
+.ps{position:relative;display:flex;justify-content:space-between;align-items:flex-end;margin-top:2px}
+.ps+.ps{margin-top:10px;padding-top:10px;border-top:1px solid var(--cardLine)}
+.dark .ps+.ps{border-top-color:#1c1c1c}
+.ps .n{font-size:15px;font-weight:600}
+.ps .w{font-size:12px;color:var(--sub);margin-top:2px}
+.ps em{font-style:normal;font-weight:600;font-size:12px}
+.isl{z-index:2;position:absolute;left:50%;transform:translateX(-50%);background:var(--island);border-radius:99px;display:flex;gap:4px;padding:6px}
+.days{bottom:84px}
+.days span{width:44px;height:44px;border-radius:99px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#9a9a9a;font-size:10px;font-weight:600}
+.days span b{font-size:14px;color:#e8e8e6;font-weight:600}
+.days span.on{background:var(--lime);color:#000} .days span.on b{color:#000}
+.nav{bottom:22px}
+.nav span{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:var(--islandIcon)}
+.nav span.on{background:var(--lime);color:#000}
+.fade{z-index:1;position:absolute;left:0;right:0;bottom:0;height:170px;background:linear-gradient(transparent,var(--bg) 55%)}
+.pill{display:flex;align-items:center;gap:10px;height:46px;border-radius:99px;background:var(--row);border:1px solid var(--rowLine);padding:0 18px;color:var(--muted);font-size:14px;margin-top:18px}
+.pill svg{width:18px;height:18px}
+.seg{display:flex;background:var(--track);border-radius:99px;padding:4px;margin-top:12px}
+.seg span{flex:1;text-align:center;font-size:13px;font-weight:600;padding:9px 0;border-radius:99px;color:var(--segIdle)}
+.seg span.on{background:var(--segBg);color:var(--segFg)}
+.lbl{font-size:12px;font-weight:600;color:var(--muted);margin:22px 0 8px 4px}
+.favs{display:flex;gap:8px}
+.fav{flex:1;background:var(--row);border:1px solid var(--rowLine);border-radius:18px;padding:12px}
+.fav .k{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.fav .n{font-size:14px;font-weight:600;margin-top:6px}
+.fav.home{background:var(--sel);border-color:var(--sel)} .fav.home .n{color:var(--acc)}
+.list{display:flex;flex-direction:column;gap:4px}
+.li{display:flex;align-items:center;justify-content:space-between;background:var(--row);border:1px solid var(--rowLine);padding:15px 16px;border-radius:6px;font-size:15px;font-weight:500}
+.li:first-child{border-top-left-radius:18px;border-top-right-radius:18px}
+.li:last-child{border-bottom-left-radius:18px;border-bottom-right-radius:18px}
+.li svg{width:18px;height:18px;color:var(--muted)}
+.li .r{color:var(--muted);font-size:13px;font-weight:500}
+.li.sel{background:var(--sel);border-color:var(--sel)} .li.sel svg{color:var(--check)}
+.li .two b{display:block;font-weight:500} .li .two i{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:2px}
+.mini{display:flex;background:var(--track);border-radius:99px;padding:3px}
+.mini span{font-size:12px;font-weight:600;padding:6px 10px;border-radius:99px;color:var(--segIdle)}
+.mini span.on{background:var(--segBg);color:var(--segFg)}
+.btn{display:flex;align-items:center;justify-content:center;height:52px;border-radius:99px;background:var(--btnBg);color:var(--btnFg);font-weight:700;font-size:15px}
+.btn.sm{height:34px;padding:0 14px;font-size:12px}
+.role{border-radius:24px;padding:22px;display:flex;justify-content:space-between;align-items:center;background:var(--row);border:1px solid var(--rowLine);margin-top:10px}
+.role b{display:block;font-size:20px;font-weight:700;letter-spacing:-.02em}
+.role i{display:block;font-style:normal;font-size:13px;color:var(--muted);margin-top:4px}
+.role.on{background:var(--lime);border-color:var(--lime);color:#000} .role.on i{color:var(--roleSelSub)}
+.hero{font-size:44px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.hero span{color:var(--acc)}
+.dark .hero span{color:var(--lime)}
+.scrim{position:absolute;inset:0;background:var(--scrim)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--sheet);border-radius:30px 30px 0 0;padding:12px 22px 34px}
+.handle{width:40px;height:4px;border-radius:9px;background:var(--handle);margin:0 auto 18px}
+.sheet .k{font-size:13px;color:var(--muted)}
+.sheet .sj{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-top:6px}
+.sheet .tm{font-size:34px;font-weight:700;letter-spacing:-.03em;color:var(--acc);margin:6px 0 18px;font-variant-numeric:tabular-nums}
+.dark .sheet .tm{color:var(--lime)}
+.srow{display:flex;justify-content:space-between;align-items:center;background:var(--sheetRow);border-radius:16px;padding:14px 16px;margin-top:6px}
+.srow .k2{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.srow .v{font-size:15px;font-weight:600;margin-top:3px}
+.srow svg{width:18px;height:18px;color:var(--muted)}
+.center{position:absolute;top:36px;left:0;right:0;bottom:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 36px}
+.vaba{font-size:64px;font-weight:800;letter-spacing:-.05em;color:var(--vaba);line-height:1}
+.big{font-size:18px;font-weight:700;margin-top:12px}
+.small{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.45}
+.ic{width:64px;height:64px;border-radius:50%;background:var(--row);border:1px solid var(--rowLine);display:grid;place-items:center;color:var(--muted);margin-bottom:18px}
+.ic svg{width:28px;height:28px}
+</style></head>
+<body class="dark" style="--bg:#000;--ink:#f4f4f2;--card:#0e0e0e;--cardLine:transparent;--cur:#121212;--curLine:#262626;--tint:rgba(212,255,58,.16);--acc:#d4ff3a;--acc2:#7f9a1f;--sub:#6e6e6e;--subCur:#9a9a9a;--time:#8a8a8a;--timeEnd:#444;--brk:#4d4d4d;--muted:#777;--island:#1b1b1b;--islandIcon:#8a8a8a;--lime:#d4ff3a;--onLime:#000;--row:#121212;--rowLine:transparent;--sheet:#111;--sheetRow:#1a1a1a;--track:#1a1a1a;--segBg:#d4ff3a;--segFg:#000;--segIdle:#8a8a8a;--vaba:#1e1e1e;--btnBg:#d4ff3a;--btnFg:#000;--sel:rgba(212,255,58,.12);--check:#d4ff3a;--scrim:rgba(0,0,0,.6);--handle:#333;--circle:#121212;--status:#f4f4f2;--page:#1a1a1a;--roleSelSub:rgba(0,0,0,.6)"><div class="cap">Tunni detailid · dark</div>
+<div class="phone"><div class="sb"><span>10:57</span><span>● ▮</span></div><div class="scroll"><div class="h1">Kolmapäev</div><div class="hsub">11. november · K-XX-24A</div><div class="tl">
+<div class="row past"><div class="tc"><b>08:30</b><i>10:00</i></div><div class="card"><div class="t">Matemaatika</div><div class="s">Mari Näidis · X-101</div></div></div>
+<div class="brk">15 min vahetund</div>
+<div class="row cur" style="--p:62%"><div class="tc"><b>10:15</b><i>11:45</i></div><div class="card"><div class="t">Programmeerimine</div><div class="s">Tiit Katse · X-103</div></div></div>
+<div class="brk">60 min lõuna</div>
+<div class="row"><div class="tc"><b>12:45</b><i>13:30</i></div><div class="card"><div class="t">Inglise keel</div>
+<div class="pl"><span>Jaan Proov</span><em>X-102</em></div><div class="pl"><span>Tiit Katse</span><em>X-103</em></div></div></div>
+<div style="height:8px"></div>
+<div class="row"><div class="tc"><b>13:30</b><i>14:15</i></div><div class="card">
+<div class="ps"><div><div class="n">Kehaline kasvatus</div><div class="w">Mari Näidis</div></div><em>Võimla</em></div>
+<div class="ps"><div><div class="n">Programmeerimine</div><div class="w">Jaan Proov</div></div><em>X-101</em></div></div></div>
+</div></div><div class="isl days"><span class="">E<b>9</b></span><span class="">T<b>10</b></span><span class="on">K<b>11</b></span><span class="">N<b>12</b></span><span class="">R<b>13</b></span></div><div class="fade"></div><div class="isl nav"><span class="on"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span class=""><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></span><span class=""><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></span></div><div class="scrim"></div><div class="sheet"><div class="handle"></div><div class="k">Kolmapäev · K-XX-24A</div>
+<div class="sj">Programmeerimine</div><div class="tm">10:15 – 11:45</div>
+<div class="srow"><div><div class="k2">Õpetaja · ruum</div><div class="v">Tiit Katse · X-103</div></div><svg viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg></div>
+<div class="srow"><div><div class="k2">Ruum</div><div class="v">X-103</div></div><svg viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg></div>
+<div class="srow"><div><div class="k2">Klass</div><div class="v">K-XX-24A</div></div><svg viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg></div></div></div></body></html>

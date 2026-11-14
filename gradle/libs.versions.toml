@@ -15,8 +15,13 @@ coroutines = "1.11.0"
 okhttp = "5.5.1"
 robolectric = "4.17"
 junit = "4.13.2"
+androidx-test-core = "1.7.0"
+espresso = "3.7.0"
 
 [libraries]
+compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
+espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 compose-ui = { module = "androidx.compose.ui:ui" }
 compose-material3 = { module = "androidx.compose.material3:material3" }

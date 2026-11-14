@@ -13,7 +13,7 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = providers.gradleProperty("versionCode").orElse("1").get().toInt()
-        versionName = providers.gradleProperty("versionName").orElse("0.1.0").get()
+        versionName = providers.gradleProperty("versionName").orElse("1.0.0").get()
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -24,8 +24,23 @@ android {
         buildConfig = true
     }
     testOptions.unitTests.isIncludeAndroidResources = true
+    // Robolectric's SDK 37 runtime reads jdk.internal.access, which JDK 21 does not export by default.
+    testOptions.unitTests.all { it.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED") }
+    // The release key lives outside the repository. Builds without these properties stay unsigned.
+    val releaseStoreFile = providers.gradleProperty("TECHNO_RELEASE_STORE_FILE").orNull
+    signingConfigs {
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = providers.gradleProperty("TECHNO_RELEASE_STORE_PASSWORD").get()
+                keyAlias = providers.gradleProperty("TECHNO_RELEASE_KEY_ALIAS").get()
+                keyPassword = providers.gradleProperty("TECHNO_RELEASE_KEY_PASSWORD").get()
+            }
+        }
+    }
     buildTypes {
         release {
+            if (releaseStoreFile != null) signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -41,6 +56,7 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons.core)
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
     implementation(libs.work.runtime)
@@ -56,11 +72,14 @@ dependencies {
     implementation(libs.okhttp)
 
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.androidx.test.core)
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.work.testing)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.mockwebserver3)
     testImplementation(libs.compose.ui.test.junit4)
+    // Compose test pulls Espresso 3.5.0, which calls InputManager.getInstance(), gone on SDK 37.
+    testImplementation(libs.espresso.core)
     debugImplementation(libs.compose.ui.test.manifest)
 }

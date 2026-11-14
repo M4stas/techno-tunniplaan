@@ -13,7 +13,7 @@ class EduPageDecoderTest {
     }
     @Test fun timetableTables() {
         val t = Fixtures.raw()
-        assertEquals(listOf(6, 2, 3, 3, 4, 6, 4, 7, 8), listOf(t.periods, t.classes, t.teachers, t.classrooms, t.subjects, t.groups, t.divisions, t.lessons, t.cards).map { it.size })
+        assertEquals(listOf(6, 2, 3, 3, 4, 6, 7, 8), listOf(t.periods, t.classes, t.teachers, t.classrooms, t.subjects, t.groups, t.lessons, t.cards).map { it.size })
         assertEquals(CardRow("c1", "*1", "1", "100000", listOf("-20")), t.cards[0])
         assertEquals(2, t.lessons[0].durationperiods); assertTrue(t.groups[0].entireclass)
     }

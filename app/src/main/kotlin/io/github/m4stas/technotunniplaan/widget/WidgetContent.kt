@@ -1,0 +1,88 @@
+package io.github.m4stas.technotunniplaan.widget
+
+import io.github.m4stas.technotunniplaan.schedule.*
+import io.github.m4stas.technotunniplaan.store.Settings
+import io.github.m4stas.technotunniplaan.ui.timetable.BreakUi
+import io.github.m4stas.technotunniplaan.ui.timetable.SlotStatus
+import io.github.m4stas.technotunniplaan.ui.timetable.breakBetween
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+
+data class WidgetConfig(val entity: EntityRef? = null, val count: Int = 1)
+fun WidgetConfig.resolve(settings: Settings): EntityRef? = entity ?: settings.home
+
+enum class WidgetLayout { SINGLE, NOW_NEXT, TIMELINE }
+fun widgetLayout(heightDp: Int): WidgetLayout = when {
+    heightDp < 170 -> WidgetLayout.SINGLE
+    heightDp < 230 -> WidgetLayout.NOW_NEXT
+    else -> WidgetLayout.TIMELINE
+}
+fun isNarrowWidget(widthDp: Int): Boolean = widthDp < 240
+fun isCompactWidget(heightDp: Int): Boolean = heightDp < 70
+
+data class WidgetLesson(
+    val date: LocalDate, val start: LocalTime, val end: LocalTime, val text: LessonText,
+    val status: SlotStatus, val progress: Float, val breakBefore: BreakUi?, val newDay: Boolean,
+    /** Every lesson in this slot; parallel lessons with the same date, start and end share one card. */
+    val entries: List<LessonText> = listOf(text),
+)
+
+sealed interface WidgetContent {
+    data object NoData : WidgetContent
+    data object NoLessons : WidgetContent
+    data class Lessons(val entityName: String, val lessons: List<WidgetLesson>) : WidgetContent
+}
+
+/** The next [count] time slots; lessons with the same date, start and end form one slot. */
+fun Schedule.nextLessonSlots(entity: EntityRef, now: LocalDateTime, count: Int): List<List<DatedLesson>> =
+    nextLessons(entity, now, Int.MAX_VALUE).groupBy { Triple(it.date, it.lesson.start, it.lesson.end) }
+        .values.take(count.coerceAtLeast(0))
+
+fun widgetContent(schedule: Schedule?, entity: EntityRef?, now: LocalDateTime, count: Int): WidgetContent {
+    if (schedule == null || schedule.weeks.isEmpty() || entity == null) return WidgetContent.NoData
+    val slots = schedule.nextLessonSlots(entity, now, count.coerceIn(1, 5))
+    if (slots.isEmpty()) return WidgetContent.NoLessons
+    return WidgetContent.Lessons(schedule.find(entity)?.name.orEmpty(), slots.mapIndexed { index, slot ->
+        val dated = slot.first()
+        val lesson = dated.lesson
+        val previous = slots.getOrNull(index - 1)?.first()
+        val previousEnd = slots.take(index).flatten().filter { it.date == dated.date }
+            .maxOfOrNull { it.lesson.end }
+        val current = now >= dated.startsAt && now < dated.endsAt
+        val progress = if (current) {
+            (Duration.between(lesson.start, now.toLocalTime()).seconds.toFloat() /
+                Duration.between(lesson.start, lesson.end).seconds).coerceIn(0f, 1f)
+        } else 0f
+        val entries = slot.map { lessonText(it.lesson, entity) }
+        WidgetLesson(dated.date, lesson.start, lesson.end, entries.first(),
+            if (current) SlotStatus.CURRENT else SlotStatus.UPCOMING, progress,
+            previousEnd?.let { breakBetween(it, lesson.start) },
+            previous != null && previous.date != dated.date, entries)
+    })
+}
+
+/** Height of a timeline card: one 46dp row plus 24dp for each parallel lesson after the first. */
+fun timelineCardHeight(lesson: WidgetLesson): Int = 46 + 24 * (lesson.entries.size - 1)
+
+fun timelineRowsThatFit(heightDp: Int, lessons: List<WidgetLesson>): Int {
+    var available = heightDp - 12 - 12 - 28
+    var rows = 0
+    for (lesson in lessons) {
+        val cost = timelineCardHeight(lesson) + if (rows == 0) 0 else if (lesson.newDay) 26 else if (lesson.breakBefore != null) 20 else 0
+        if (available < cost) break
+        available -= cost
+        rows++
+    }
+    return rows.coerceAtLeast(minOf(1, lessons.size))
+}
+
+fun nextRedrawAt(upcoming: List<DatedLesson>, now: LocalDateTime): LocalDateTime? {
+    val end = upcoming.minOfOrNull { it.endsAt } ?: return null
+    val start = upcoming.map { it.startsAt }.filter { it > now }.minOrNull()
+    val boundary = minOf(end, start ?: end)
+    val midnight = now.toLocalDate().plusDays(1).atStartOfDay()
+    val next = if (upcoming.any { it.date > now.toLocalDate() } && midnight < boundary) midnight else boundary
+    return if (upcoming.any { now >= it.startsAt && now < it.endsAt }) minOf(next, now.plusMinutes(5)) else next
+}

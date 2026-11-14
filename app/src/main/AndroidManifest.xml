@@ -1,7 +1,24 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
-    <application android:label="@string/app_name" android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
-        <activity android:name=".MainActivity" android:exported="true">
+    <application tools:targetApi="33" android:localeConfig="@xml/locales_config" android:name=".App" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+        <provider android:name="androidx.startup.InitializationProvider" android:authorities="${applicationId}.androidx-startup" android:exported="false" tools:node="merge">
+            <meta-data android:name="androidx.work.WorkManagerInitializer" tools:node="remove" />
+        </provider>
+        <service android:name="androidx.appcompat.app.AppLocalesMetadataHolderService" android:enabled="false" android:exported="false">
+            <meta-data android:name="autoStoreLocales" android:value="true" />
+        </service>
+        <receiver android:name=".widget.NextLessonsReceiver" android:exported="true" android:label="@string/widget_name">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/next_lessons_widget_info" />
+        </receiver>
+        <receiver android:name=".widget.WidgetAlarmReceiver" android:exported="false">
+            <intent-filter><action android:name="android.intent.action.TIME_SET" /></intent-filter>
+        </receiver>
+        <activity android:name=".widget.WidgetConfigActivity" android:exported="true">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" /></intent-filter>
+        </activity>
+        <!-- The app handles theme and language changes itself, so changing them in settings does not recreate the activity. -->
+        <activity android:name=".MainActivity" android:exported="true" android:configChanges="uiMode|locale|layoutDirection">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
