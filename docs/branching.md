@@ -34,13 +34,13 @@ Create a `release/*` branch from the validated `dev` commit, then run no-mistake
 
 CI runs on pull requests into either branch and on pushes after merges. The required `build-test` job runs Android lint, JVM unit tests and a debug APK build with JDK 21. A failed step blocks the merge.
 
-Passing CI does not verify every device interaction. Before promoting app behavior changes, complete the applicable emulator checks in `docs/agent-policy.md`. Keep real timetable data and screenshots containing it out of the repository. README screenshots must use invented data.
+Passing CI does not verify every device interaction. Before promoting app behavior changes, test them on an emulator or device. Keep real timetable data and screenshots containing it out of the repository. README screenshots must use invented data.
 
 After a release, synchronize `main` back into `dev` through a pull request if the release introduced fixes that are missing from `dev`.
 
 ## Building and publishing a release APK
 
-Read the execution restrictions in [Device testing](agent-policy.md#device-testing) before building. The version defaults and signing configuration are defined in [app/build.gradle.kts](../app/build.gradle.kts). Override the version with `-PversionName=<version>` and `-PversionCode=<integer>` when needed. Increase `versionCode` for subsequent published updates.
+The version defaults and signing configuration are defined in [app/build.gradle.kts](../app/build.gradle.kts). Override the version with `-PversionName=<version>` and `-PversionCode=<integer>` when needed. Increase `versionCode` for subsequent published updates.
 
 Release signing reads Gradle properties. Keep the keystore outside the repository and put these entries in your Gradle user properties file, normally `~/.gradle/gradle.properties`:
 
@@ -65,16 +65,26 @@ Tags must use `vMAJOR.MINOR.PATCH`, optionally followed by a hyphen and a suffix
 
 A stable tag must point at a commit reachable from `main`. A tag with a suffix, such as `v1.1.0-beta.1`, becomes a GitHub pre-release and must point at a commit reachable from `dev` or `main`. The commit need not be the branch tip. A pre-release shares its `versionCode` with the stable version it precedes.
 
-The repository owner must create the keystore and set the four repository secrets. Agents must never handle the signing passwords. Set the secrets once with the GitHub CLI, from the directory that holds the keystore:
+The repository owner must create the signing key and set the four repository secrets. Agents must never handle the signing passwords. This script makes a new key with a random password, stores both only in GitHub secrets and deletes the local copy. Run it with JDK 21 on the `PATH`:
 
 ```sh
-base64 -i release.jks | gh secret set TECHNO_RELEASE_KEYSTORE_BASE64 --repo M4stas/techno-tunniplaan
-gh secret set TECHNO_RELEASE_STORE_PASSWORD --repo M4stas/techno-tunniplaan
-gh secret set TECHNO_RELEASE_KEY_ALIAS --repo M4stas/techno-tunniplaan
-gh secret set TECHNO_RELEASE_KEY_PASSWORD --repo M4stas/techno-tunniplaan
+(
+  set -e
+  cd "$(mktemp -d)"
+  pass=$(openssl rand -base64 24 | tr -d '/+=')
+  keytool -genkeypair -keystore release.jks -storetype PKCS12 \
+    -alias techno -keyalg RSA -keysize 4096 -validity 10000 \
+    -dname "CN=techno-tunniplaan" -storepass "$pass" -keypass "$pass"
+  repo=M4stas/techno-tunniplaan
+  base64 -i release.jks | gh secret set TECHNO_RELEASE_KEYSTORE_BASE64 --repo "$repo"
+  printf %s "$pass" | gh secret set TECHNO_RELEASE_STORE_PASSWORD --repo "$repo"
+  printf %s techno | gh secret set TECHNO_RELEASE_KEY_ALIAS --repo "$repo"
+  printf %s "$pass" | gh secret set TECHNO_RELEASE_KEY_PASSWORD --repo "$repo"
+  rm release.jks
+)
 ```
 
-Each `gh secret set` without input prompts for the value, so it stays out of shell history. The workflow fails before building when any secret is missing.
+GitHub never shows a secret again, so the key cannot be recovered. If the secrets are lost, run the script again and release a new version. Android refuses an update signed with a different key, so existing users must uninstall the app before installing it. The workflow fails before building when any secret is missing.
 
 To publish, merge the release pull request into `main`, then tag the merge commit:
 

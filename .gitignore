@@ -24,3 +24,11 @@ build/
 # Captured EduPage responses must never be committed
 *.edupage.json
 captures/
+
+# Agent instructions live in a separate private repository
+AGENTS.md
+CLAUDE.md
+.claude/
+.codex/
+docs/agent-policy.md
+docs/superpowers/
