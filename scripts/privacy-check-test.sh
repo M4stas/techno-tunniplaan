@@ -29,6 +29,12 @@ check() {
 check clean 0 README.md 'Invented teacher A. Näide, room 101.'
 check noreply-email 0 README.md '12345+someone@users.noreply.github.com'
 check example-email 0 README.md 'teacher@example.com'
+check github-noreply-email 0 README.md 'noreply@github.com'
+check noreply-hyphen-email 1 README.md 'someone@users-noreply-github.com'
+check noreply-first-dot-email 1 README.md 'someone@users-noreply.github.com'
+check noreply-second-dot-email 1 README.md 'someone@users.noreply-github.com'
+check noreply-last-dot-email 1 README.md 'someone@users.noreply.github-com'
+check reserved-dot-email 1 README.md 'someone@dept.school-test'
 check mac-home 1 README.md 'Built in /Users/someone/Projects'
 check linux-home 1 notes.txt 'see /home/someone/app'
 check windows-home 1 notes.txt 'C:\Users\someone\app'
@@ -75,21 +81,33 @@ check large-viewer-fixture 1 app/src/test/resources/fixtures/viewer.json "{\"reg
 check large-spaced-fixture 1 'app/src/test/resources/fixtures/viewer response.json' "{\"regular\":{\"default_num\":\"22\"}}$padding"
 
 # Commit messages are scanned only with --commits.
-repo="$work/commit-message"
-mkdir -p "$repo/scripts"
-cp "$script" "$repo/scripts/"
-git -C "$repo" init -q
-git -C "$repo" add -A
-git -C "$repo" -c user.name=t -c user.email=t@example.com commit -qm 'Start'
-git -C "$repo" -c user.name=t -c user.email=t@example.com commit -q --allow-empty -m 'Fix path /Users/someone/app'
-status=0
-(cd "$repo" && sh scripts/privacy-check.sh --commits HEAD~1..HEAD) > /dev/null 2>&1 || status=$?
-if [ "$status" -ne 1 ]; then
-    echo "FAIL commit-message: expected exit 1, got $status"
-    failures=$((failures + 1))
-else
-    echo "ok   commit-message"
-fi
+check_commit() {
+    repo="$work/$1"
+    mkdir -p "$repo/scripts"
+    cp "$script" "$repo/scripts/"
+    git -C "$repo" init -q
+    git -C "$repo" add -A
+    git -C "$repo" -c user.name=t -c user.email=t@example.com commit -qm 'Start'
+    git -C "$repo" -c user.name=t -c user.email=t@example.com commit -q --allow-empty -m "$3"
+    status=0
+    (cd "$repo" && sh scripts/privacy-check.sh --commits HEAD~1..HEAD) > /dev/null 2>&1 || status=$?
+    if [ "$status" -ne "$2" ]; then
+        echo "FAIL $1: expected exit $2, got $status"
+        failures=$((failures + 1))
+    else
+        echo "ok   $1"
+    fi
+}
+
+check_commit commit-message 1 'Fix path /Users/someone/app'
+check_commit commit-noreply-email 0 '12345+someone@users.noreply.github.com'
+check_commit commit-github-noreply-email 0 'noreply@github.com'
+check_commit commit-example-email 0 'teacher@example.com'
+check_commit commit-noreply-hyphen-email 1 'someone@users-noreply-github.com'
+check_commit commit-noreply-first-dot-email 1 'someone@users-noreply.github.com'
+check_commit commit-noreply-second-dot-email 1 'someone@users.noreply-github.com'
+check_commit commit-noreply-last-dot-email 1 'someone@users.noreply.github-com'
+check_commit commit-reserved-dot-email 1 'someone@dept.school-test'
 
 if [ "$failures" -ne 0 ]; then
     echo "$failures privacy-check test(s) failed" >&2

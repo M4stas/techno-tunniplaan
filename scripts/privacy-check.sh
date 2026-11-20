@@ -18,7 +18,7 @@ fixture_max_bytes=20000
 
 home_path='(/Users/|/home/|[A-Za-z]:\\Users\\)[A-Za-z0-9._-]+'
 email='[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
-allowed_email='(@users\.noreply\.github\.com|^noreply@github\.com|@example\.(com|org|net)|\.(example|test|invalid|localhost))$'
+allowed_email='(@users[.]noreply[.]github[.]com|^noreply@github[.]com|@example[.](com|org|net)|[.](example|test|invalid|localhost))$'
 # International numbers such as +372 5123 4567, and tel: links.
 phone='(\+[0-9]{1,3}[ -]?[0-9]{2,4}[ -]?[0-9]{3,4}([ -]?[0-9]{2,4})?|tel:[+0-9])'
 
