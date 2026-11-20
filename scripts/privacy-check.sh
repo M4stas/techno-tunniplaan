@@ -16,7 +16,7 @@ image_dirs='^(docs/assets/|app/src/[^/]+/res/)'
 fixture_dir='^app/src/test/resources/fixtures/'
 fixture_max_bytes=20000
 
-home_path='(/Users/|/home/|[A-Za-z]:\\Users\\)[A-Za-z0-9._-]+'
+home_path='(/Users/|/home/|[A-Za-z]:[/\\]Users[/\\])[^/\\[:space:]]+'
 email='[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
 allowed_email='(@users[.]noreply[.]github[.]com|^noreply@github[.]com|@example[.](com|org|net)|[.](example|test|invalid|localhost))$'
 # International numbers such as +372 5123 4567, and tel: links.
