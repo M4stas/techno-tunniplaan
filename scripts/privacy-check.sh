@@ -8,19 +8,16 @@
 # Real names cannot be checked here, because a list of them would itself be personal data.
 set -eu
 
-self=scripts/privacy-check.sh
-self_test=scripts/privacy-check-test.sh
 # Images are allowed only here. README screenshots use invented data.
 image_dirs='^(docs/assets/|app/src/[^/]+/res/)'
 # EduPage-shaped JSON is allowed only here, and only in small hand-written fixtures.
 fixture_dir='^app/src/test/resources/fixtures/'
 fixture_max_bytes=20000
 
-home_path='(/Users/|/home/|[A-Za-z]:[/\\]Users[/\\])[^/\\[:space:]]+'
+home_path='(/[U]sers/|/[h]ome/|[A-Za-z]:[/\\]Users[/\\])[^/\\[:space:]]+'
 email='[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
-allowed_email='(@users[.]noreply[.]github[.]com|^noreply@github[.]com|@example[.](com|org|net)|[.](example|test|invalid|localhost))$'
-# International numbers such as +372 5123 4567, and tel: links.
-phone='(\+[0-9]{1,3}[ -]?[0-9]{2,4}[ -]?[0-9]{3,4}([ -]?[0-9]{2,4})?|tel:[+0-9])'
+allowed_email='(@users[.]noreply[.]github[.]com|^noreply@github[.]com|@example[.](com|org|net)|[.]example)$'
+phone='(\+[0-9]{1,3}[ -]?[0-9]{2,4}[ -]?[0-9]{3,4}([ -]?[0-9]{2,4})?|(^|[^[:alnum:]_.])[1-9][0-9]{7,14}([^[:alnum:]_.]|$)|(^|[^[:alnum:]_.])([0-9]{2,4}[ -]){1,3}[0-9]{3,4}([^[:alnum:]_.]|$)|tel:[+0-9])'
 
 failed=0
 report() {
@@ -29,14 +26,14 @@ report() {
 }
 
 scan_files() {
-    git grep -nIE "$1" -- . ":(exclude)$self" ":(exclude)$self_test" || true
+    git grep -nIE "$1" -- . || true
 }
 
 hits=$(scan_files "$home_path")
 [ -n "$hits" ] && report "home directory path:
 $hits"
 
-hits=$(git grep -nIoE "$email" -- . ":(exclude)$self" ":(exclude)$self_test" \
+hits=$(git grep -nIoE "$email" -- . \
     | awk -F: -v ok="$allowed_email" '{ addr = $0; sub(/^[^:]*:[^:]*:/, "", addr); if (addr !~ ok) print }' || true)
 [ -n "$hits" ] && report "email address outside noreply and example domains:
 $hits"
@@ -71,7 +68,7 @@ for raw_path in paths:
     if not raw_path:
         continue
     name = os.fsdecode(raw_path)
-    if re.search(r"\.(png|jpe?g|webp|gif|bmp|heic|heif|tiff?|avif)$", name, re.I) and not re.match(image_dirs, name):
+    if re.search(r"\.(png|jpe?g|webp|gif|bmp|heic|heif|tiff?|avif|svg|ico)$", name, re.I) and not re.match(image_dirs, name):
         print(f"privacy-check: image outside docs/assets/ or app resources: {name!r}", file=sys.stderr)
         failed = True
     if not name.endswith(".json"):

@@ -36,7 +36,7 @@ CI runs on pull requests into either branch and on pushes after merges. The requ
 
 ## Privacy check
 
-`scripts/privacy-check.sh` fails when a tracked file contains a home directory path, an email address outside the GitHub noreply and example domains, or an international phone number. It also fails on an image outside `docs/assets/` and the app's `res/` folders, on EduPage-shaped JSON outside `app/src/test/resources/fixtures/`, and on a fixture larger than 20 KB. With `--commits <range>` it scans commit messages for the same data. CI runs it on every pull request, and the no-mistakes lint step runs it before Android lint. Run it locally with `sh scripts/privacy-check.sh`. `sh scripts/privacy-check-test.sh` tests the script itself.
+`scripts/privacy-check.sh` fails when a tracked file contains a home directory path, an email address outside the GitHub noreply and example domains, or a phone number. It also fails on an image outside `docs/assets/` and the app's `res/` folders, on EduPage-shaped JSON outside `app/src/test/resources/fixtures/`, and on a fixture larger than 20 KB. With `--commits <range>` it scans commit messages for the same data. CI runs it on every pull request, and the no-mistakes lint step runs it before Android lint. Run it locally with `sh scripts/privacy-check.sh`. `sh scripts/privacy-check-test.sh` tests the script itself.
 
 The script cannot detect real names. Reading the staged diff before each commit is still required.
 
