@@ -29,6 +29,10 @@ scan_files() {
     git grep -nIE "$1" -- . || true
 }
 
+scan_phones() {
+    sed -E "s/$email/ /g" | grep -E "$phone" || true
+}
+
 hits=$(scan_files "$home_path")
 [ -n "$hits" ] && report "home directory path:
 $hits"
@@ -38,7 +42,7 @@ hits=$(git grep -nIoE "$email" -- . \
 [ -n "$hits" ] && report "email address outside noreply and example domains:
 $hits"
 
-hits=$(scan_files "$phone")
+hits=$(git grep -hI -e '' -- . | scan_phones)
 [ -n "$hits" ] && report "phone number:
 $hits"
 
@@ -97,8 +101,11 @@ fi
 
 if [ "${1:-}" = "--commits" ] && [ -n "${2:-}" ]; then
     messages=$(git log --format='%h %B' "$2")
-    hits=$(printf '%s\n' "$messages" | grep -nE "$home_path|$phone" || true)
+    hits=$(printf '%s\n' "$messages" | grep -nE "$home_path" || true)
     [ -n "$hits" ] && report "commit message in $2:
+$hits"
+    hits=$(printf '%s\n' "$messages" | scan_phones)
+    [ -n "$hits" ] && report "phone number in a commit message in $2:
 $hits"
     hits=$(printf '%s\n' "$messages" | grep -oE "$email" | grep -vE "$allowed_email" || true)
     [ -n "$hits" ] && report "email address in a commit message in $2:
