@@ -21,7 +21,6 @@ email='[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
 allowed_email='(@users\.noreply\.github\.com|^noreply@github\.com|@example\.(com|org|net)|\.(example|test|invalid|localhost))$'
 # International numbers such as +372 5123 4567, and tel: links.
 phone='(\+[0-9]{1,3}[ -]?[0-9]{2,4}[ -]?[0-9]{3,4}([ -]?[0-9]{2,4})?|tel:[+0-9])'
-edupage_marker='"dbiAccessorRes"|"regular"[[:space:]]*:[[:space:]]*\{[[:space:]]*"default_num"|"ttviewer"'
 
 failed=0
 report() {
@@ -46,18 +45,58 @@ hits=$(scan_files "$phone")
 [ -n "$hits" ] && report "phone number:
 $hits"
 
-hits=$(git ls-files | grep -iE '\.(png|jpe?g|webp|gif|bmp|heic|heif|tiff?|avif)$' | grep -vE "$image_dirs" || true)
-[ -n "$hits" ] && report "image outside docs/assets/ or app resources:
-$hits"
+if ! python3 - "$image_dirs" "$fixture_dir" "$fixture_max_bytes" <<'PY'
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
 
-for f in $(git ls-files '*.json'); do
-    grep -qE "$edupage_marker" "$f" || continue
-    if ! printf '%s\n' "$f" | grep -qE "$fixture_dir"; then
-        report "EduPage-shaped JSON outside $fixture_dir: $f"
-    elif [ "$(wc -c < "$f")" -gt "$fixture_max_bytes" ]; then
-        report "EduPage fixture larger than $fixture_max_bytes bytes, which suggests a captured response: $f"
-    fi
-done
+image_dirs, fixture_dir, fixture_max_bytes = sys.argv[1:]
+failed = False
+
+def viewer_shape(value):
+    if isinstance(value, dict):
+        regular = value.get("regular")
+        return (
+            isinstance(regular, dict) and "default_num" in regular
+        ) or any(viewer_shape(child) for child in value.values())
+    if isinstance(value, list):
+        return any(viewer_shape(child) for child in value)
+    return False
+
+paths = subprocess.check_output(["git", "ls-files", "-z"]).split(b"\0")
+for raw_path in paths:
+    if not raw_path:
+        continue
+    name = os.fsdecode(raw_path)
+    if re.search(r"\.(png|jpe?g|webp|gif|bmp|heic|heif|tiff?|avif)$", name, re.I) and not re.match(image_dirs, name):
+        print(f"privacy-check: image outside docs/assets/ or app resources: {name!r}", file=sys.stderr)
+        failed = True
+    if not name.endswith(".json"):
+        continue
+    data = Path(name).read_bytes()
+    marked = re.search(rb'"dbiAccessorRes"|"ttviewer"', data)
+    if not marked:
+        try:
+            marked = viewer_shape(json.loads(data))
+        except (ValueError, UnicodeError):
+            marked = False
+    if not marked:
+        continue
+    if not re.match(fixture_dir, name):
+        print(f"privacy-check: EduPage-shaped JSON outside {fixture_dir}: {name!r}", file=sys.stderr)
+        failed = True
+    elif len(data) > int(fixture_max_bytes):
+        print(f"privacy-check: EduPage fixture larger than {fixture_max_bytes} bytes, which suggests a captured response: {name!r}", file=sys.stderr)
+        failed = True
+
+sys.exit(1 if failed else 0)
+PY
+then
+    failed=1
+fi
 
 if [ "${1:-}" = "--commits" ] && [ -n "${2:-}" ]; then
     messages=$(git log --format='%h %B' "$2")

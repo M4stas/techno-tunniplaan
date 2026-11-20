@@ -42,10 +42,37 @@ check stray-image 1 docs/screenshot.png 'png'
 check fixture-json 0 app/src/test/resources/fixtures/t.json '{"r":{"dbiAccessorRes":{"tables":[]}}}'
 check captured-json 1 app/src/main/assets/t.json '{"r":{"dbiAccessorRes":{"tables":[]}}}'
 check viewer-json 1 data/viewer.json '{"r":{"regular":{"default_num":"22"}}}'
+check pretty-viewer-json 1 data/viewer.json '{
+  "r": {
+    "regular": {
+      "default_num": "22"
+    }
+  }
+}'
+check reordered-viewer-json 1 data/viewer.json '{"r":{"regular":{"timetables":[],"default_num":"22"}}}'
+check array-viewer-json 1 data/viewer.json '[{"regular":{"timetables":[],"default_num":"22"}}]'
+check small-viewer-fixture 0 app/src/test/resources/fixtures/viewer.json '{"r":{"regular":{
+"timetables":[],"default_num":"22"}}}'
+check spaced-json 1 'data/viewer response.json' '{"regular":{"default_num":"22"}}'
+check unicode-json 1 'data/õpetajad.json' '{"dbiAccessorRes":{}}'
+check newline-json 1 'data/viewer
+response.json' '{"ttviewer":{}}'
+check spaced-fixture 0 'app/src/test/resources/fixtures/viewer response.json' '{"regular":{"default_num":"22"}}'
+check unicode-image 1 'docs/õpetajad.png' 'png'
+check spaced-image 1 'docs/viewer response.PNG' 'png'
+check newline-image 1 'docs/viewer
+response.png' 'png'
+check unicode-allowed-image 0 'docs/assets/õpetajad.png' 'png'
+check spaced-allowed-image 0 'app/src/main/res/drawable/viewer response.png' 'png'
 check plain-json 0 app/config.json '{"name":"value"}'
+check unrelated-regular 0 app/config.json '{"regular":{"other":{"default_num":"22"}}}'
 
 big=$(awk 'BEGIN { for (i = 0; i < 2100; i++) printf "{\"id\":\"%05d\"},", i }')
 check large-fixture 1 app/src/test/resources/fixtures/big.json "{\"r\":{\"dbiAccessorRes\":{\"tables\":[$big{}]}}}"
+padding=$(awk 'BEGIN { for (i = 0; i < 21000; i++) printf " " }')
+check large-viewer-fixture 1 app/src/test/resources/fixtures/viewer.json "{\"regular\":{
+\"timetables\":[],\"default_num\":\"22\"}}$padding"
+check large-spaced-fixture 1 'app/src/test/resources/fixtures/viewer response.json' "{\"regular\":{\"default_num\":\"22\"}}$padding"
 
 # Commit messages are scanned only with --commits.
 repo="$work/commit-message"
