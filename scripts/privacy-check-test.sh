@@ -18,6 +18,14 @@ check() {
     else
         printf '%s\n' "$4" > "$repo/$3"
     fi
+    if [ -n "${5:-}" ]; then
+        python3 - "$repo/$3" "$5" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+path.write_bytes(path.read_text(encoding="utf-8").encode(sys.argv[2]))
+PY
+    fi
     git -C "$repo" init -q
     git -C "$repo" add -A
     status=0
@@ -42,6 +50,12 @@ check phone-before-noreply 1 README.md 'Call 5123''4567, 1234''5678+someone@''us
 check numeric-personal-email 1 README.md '1234''5678@''gmail.com'
 check example-email 0 README.md 'teacher@''example.com'
 check github-noreply-email 0 README.md 'noreply@''github.com'
+check uppercase-example-domain 0 README.md 'teacher@''EXAMPLE.COM'
+check mixed-example-domain 0 README.md 'teacher@''ExAmPlE.OrG'
+check uppercase-noreply-domain 0 README.md 'someone@''USERS.NOREPLY.GITHUB.COM'
+check uppercase-github-domain 0 README.md 'noreply@''GITHUB.COM'
+check uppercase-reserved-example-domain 0 README.md 'teacher@''School.EXAMPLE'
+check uppercase-forbidden-domain 1 README.md 'teacher@''GMAIL.COM'
 check noreply-hyphen-email 1 README.md 'someone@''users-noreply-github.com'
 check noreply-first-dot-email 1 README.md 'someone@''users-noreply.github.com'
 check noreply-second-dot-email 1 README.md 'someone@''users.noreply-github.com'
@@ -61,6 +75,8 @@ check clean-test-script 0 scripts/privacy-check-test.sh "$(cat scripts/privacy-c
 check mac-home 1 README.md 'Built in /Us''ers/someone/Projects'
 check linux-home 1 notes.txt 'see /ho''me/someone/app'
 check windows-home 1 notes.txt 'C:\Us''ers\someone\app'
+check lowercase-windows-home 1 notes.txt 'c:\us''ers\someone\app'
+check mixed-case-windows-home 1 notes.txt 'C:/uS''eRs/用户/Projects'
 check unicode-mac-home 1 notes.txt '/Us''ers/用户/Projects'
 check unicode-linux-home 1 notes.txt '/ho''me/用户/app'
 check unicode-windows-home 1 notes.txt 'C:\Us''ers\用户\Projects'
@@ -136,6 +152,23 @@ for extension in JSON JsOn; do
     check "large-viewer-fixture-$extension" 1 "app/src/test/resources/fixtures/viewer.$extension" "{\"regular\":{\"default_num\":\"22\"}}$padding"
     check "large-ttviewer-fixture-$extension" 1 "app/src/test/resources/fixtures/ttviewer.$extension" "{\"ttviewer\":{}}$padding"
 done
+for encoding in utf-16 utf-16-le utf-16-be utf-32 utf-8-sig; do
+    check "encoded-capture-$encoding" 1 data/capture.JSON '{"r":{"dbiAccessorRes":{}}}' "$encoding"
+    check "encoded-ttviewer-$encoding" 1 data/capture.json '{"r":{"ttviewer":{}}}' "$encoding"
+    check "encoded-viewer-$encoding" 1 data/capture.JsOn '{"r":{"regular":{"default_num":"22"}}}' "$encoding"
+    check "encoded-fixture-$encoding" 0 app/src/test/resources/fixtures/response.JSON '{"r":{"dbiAccessorRes":{}}}' "$encoding"
+    check "encoded-ttviewer-fixture-$encoding" 0 app/src/test/resources/fixtures/ttviewer.json '{"r":{"ttviewer":{}}}' "$encoding"
+    check "encoded-viewer-fixture-$encoding" 0 app/src/test/resources/fixtures/viewer.json '{"r":{"regular":{"default_num":"22"}}}' "$encoding"
+    check "encoded-large-fixture-$encoding" 1 app/src/test/resources/fixtures/response.JSON "{\"dbiAccessorRes\":{}}$padding" "$encoding"
+    check "encoded-large-ttviewer-$encoding" 1 app/src/test/resources/fixtures/ttviewer.json "{\"ttviewer\":{}}$padding" "$encoding"
+    check "encoded-large-viewer-$encoding" 1 app/src/test/resources/fixtures/viewer.json "{\"regular\":{\"default_num\":\"22\"}}$padding" "$encoding"
+    check "encoded-home-$encoding" 1 notes.txt '/Us''ers/用户/Projects' "$encoding"
+    check "encoded-windows-$encoding" 1 notes.txt 'c:\us''ers\someone\Projects' "$encoding"
+    check "encoded-email-$encoding" 1 notes.txt 'someone@''gmail.com' "$encoding"
+    check "encoded-phone-$encoding" 1 notes.txt 'Call 5123''4567' "$encoding"
+    check "encoded-allowed-email-$encoding" 0 notes.txt 'teacher@''EXAMPLE.COM' "$encoding"
+    check "encoded-clean-$encoding" 0 notes.txt 'Invented teacher A. Näide, room 101.' "$encoding"
+done
 
 # Commit messages are scanned only with --commits.
 check_commit() {
@@ -159,6 +192,8 @@ check_commit() {
 check_commit commit-message 1 'Fix path /Us''ers/someone/app'
 check_commit commit-linux-home 1 '/ho''me/someone/app'
 check_commit commit-windows-home 1 'C:\Us''ers\someone\app'
+check_commit commit-lowercase-windows-home 1 'c:\us''ers\someone\app'
+check_commit commit-mixed-case-windows-home 1 'C:/uS''eRs/用户/Projects'
 check_commit commit-unicode-mac-home 1 '/Us''ers/用户/Projects'
 check_commit commit-unicode-linux-home 1 '/ho''me/用户/app'
 check_commit commit-unicode-windows-home 1 'C:\Us''ers\用户\Projects'
@@ -177,6 +212,12 @@ check_commit commit-noreply-and-phone 1 '1234''5678+someone@''users.noreply.gith
 check_commit commit-phone-before-noreply 1 'Call 5123''4567, 1234''5678+someone@''users.noreply.github.com'
 check_commit commit-numeric-personal-email 1 '1234''5678@''gmail.com'
 check_commit commit-github-noreply-email 0 'noreply@''github.com'
+check_commit commit-uppercase-example-domain 0 'teacher@''EXAMPLE.COM'
+check_commit commit-mixed-example-domain 0 'teacher@''ExAmPlE.OrG'
+check_commit commit-uppercase-noreply-domain 0 'someone@''USERS.NOREPLY.GITHUB.COM'
+check_commit commit-uppercase-github-domain 0 'noreply@''GITHUB.COM'
+check_commit commit-uppercase-reserved-example-domain 0 'teacher@''School.EXAMPLE'
+check_commit commit-uppercase-forbidden-domain 1 'teacher@''GMAIL.COM'
 check_commit commit-example-email 0 'teacher@''example.com'
 check_commit commit-noreply-hyphen-email 1 'someone@''users-noreply-github.com'
 check_commit commit-noreply-first-dot-email 1 'someone@''users-noreply.github.com'
