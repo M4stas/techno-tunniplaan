@@ -169,6 +169,20 @@ for encoding in utf-16 utf-16-le utf-16-be utf-32 utf-8-sig; do
     check "encoded-allowed-email-$encoding" 0 notes.txt 'teacher@''EXAMPLE.COM' "$encoding"
     check "encoded-clean-$encoding" 0 notes.txt 'Invented teacher A. Näide, room 101.' "$encoding"
 done
+for encoding in cp1252 iso8859-1; do
+    check "legacy-email-$encoding" 1 notes.txt 'Résumé: someone@''gmail.com' "$encoding"
+    check "legacy-home-$encoding" 1 notes.txt 'Résumé: /Us''ers/someone/Projects' "$encoding"
+    check "legacy-phone-$encoding" 1 notes.txt 'Résumé: call 5123''4567' "$encoding"
+    check "legacy-capture-$encoding" 1 data/capture.json '{"r":{"dbiAccessorRes":{"label":"Résumé"}}}' "$encoding"
+    check "legacy-ttviewer-$encoding" 1 data/viewer.JSON '{"r":{"ttviewer":{"label":"Résumé"}}}' "$encoding"
+    check "legacy-viewer-$encoding" 1 data/viewer.JsOn '{"r":{"regular":{"label":"Résumé","default_num":"22"}}}' "$encoding"
+    check "legacy-small-fixture-$encoding" 0 app/src/test/resources/fixtures/response.json '{"dbiAccessorRes":{"label":"Résumé"}}' "$encoding"
+    check "legacy-large-fixture-$encoding" 1 app/src/test/resources/fixtures/response.json "{\"dbiAccessorRes\":{\"label\":\"Résumé\"}}$padding" "$encoding"
+    check "legacy-large-ttviewer-$encoding" 1 app/src/test/resources/fixtures/ttviewer.json "{\"ttviewer\":{\"label\":\"Résumé\"}}$padding" "$encoding"
+    check "legacy-large-viewer-$encoding" 1 app/src/test/resources/fixtures/viewer.json "{\"regular\":{\"label\":\"Résumé\",\"default_num\":\"22\"}}$padding" "$encoding"
+    check "legacy-clean-$encoding" 0 notes.txt 'Résumé: invented teacher A. Exemple.' "$encoding"
+    check "legacy-allowed-email-$encoding" 0 notes.txt 'Résumé: teacher@''EXAMPLE.COM' "$encoding"
+done
 
 # Commit messages are scanned only with --commits.
 check_commit() {

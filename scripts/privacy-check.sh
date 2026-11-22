@@ -74,10 +74,7 @@ for raw_path in paths:
     if re.search(r"\.(png|jpe?g|webp|gif|bmp|heic|heif|tiff?|avif|svg|ico)$", name, re.I) and not re.match(image_dirs, name):
         report(f"image outside docs/assets/ or app resources: {name!r}")
     data = Path(name).read_bytes()
-    try:
-        text = data.decode(json.detect_encoding(data))
-    except UnicodeError:
-        continue
+    text = data.decode(json.detect_encoding(data), errors="replace")
     if "\0" in text:
         continue
     scan_text(text, repr(name))
