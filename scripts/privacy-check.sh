@@ -75,7 +75,7 @@ for raw_path in paths:
     if re.search(r"\.(png|jpe?g|webp|gif|bmp|heic|heif|tiff?|avif|svg|ico)$", name, re.I) and not re.match(image_dirs, name):
         print(f"privacy-check: image outside docs/assets/ or app resources: {name!r}", file=sys.stderr)
         failed = True
-    if not name.endswith(".json"):
+    if not name.lower().endswith(".json"):
         continue
     data = Path(name).read_bytes()
     marked = re.search(rb'"dbiAccessorRes"|"ttviewer"', data)

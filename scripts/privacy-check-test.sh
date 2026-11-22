@@ -115,6 +115,15 @@ check unicode-allowed-image 0 'docs/assets/õpetajad.png' 'png'
 check spaced-allowed-image 0 'app/src/main/res/drawable/viewer response.png' 'png'
 check plain-json 0 app/config.json '{"name":"value"}'
 check unrelated-regular 0 app/config.json '{"regular":{"other":{"default_num":"22"}}}'
+for extension in JSON JsOn; do
+    check "captured-$extension" 1 "data/response.$extension" '{"dbiAccessorRes":{}}'
+    check "viewer-$extension" 1 "data/viewer.$extension" '{"regular":{"default_num":"22"}}'
+    check "ttviewer-$extension" 1 "data/ttviewer.$extension" '{"ttviewer":{}}'
+    check "fixture-$extension" 0 "app/src/test/resources/fixtures/response.$extension" '{"dbiAccessorRes":{}}'
+    check "viewer-fixture-$extension" 0 "app/src/test/resources/fixtures/viewer.$extension" '{"regular":{"default_num":"22"}}'
+    check "ttviewer-fixture-$extension" 0 "app/src/test/resources/fixtures/ttviewer.$extension" '{"ttviewer":{}}'
+    check "plain-$extension" 0 "data/config.$extension" '{"name":"value"}'
+done
 
 big=$(awk 'BEGIN { for (i = 0; i < 2100; i++) printf "{\"id\":\"%05d\"},", i }')
 check large-fixture 1 app/src/test/resources/fixtures/big.json "{\"r\":{\"dbiAccessorRes\":{\"tables\":[$big{}]}}}"
@@ -122,6 +131,11 @@ padding=$(awk 'BEGIN { for (i = 0; i < 21000; i++) printf " " }')
 check large-viewer-fixture 1 app/src/test/resources/fixtures/viewer.json "{\"regular\":{
 \"timetables\":[],\"default_num\":\"22\"}}$padding"
 check large-spaced-fixture 1 'app/src/test/resources/fixtures/viewer response.json' "{\"regular\":{\"default_num\":\"22\"}}$padding"
+for extension in JSON JsOn; do
+    check "large-fixture-$extension" 1 "app/src/test/resources/fixtures/response.$extension" "{\"dbiAccessorRes\":{}}$padding"
+    check "large-viewer-fixture-$extension" 1 "app/src/test/resources/fixtures/viewer.$extension" "{\"regular\":{\"default_num\":\"22\"}}$padding"
+    check "large-ttviewer-fixture-$extension" 1 "app/src/test/resources/fixtures/ttviewer.$extension" "{\"ttviewer\":{}}$padding"
+done
 
 # Commit messages are scanned only with --commits.
 check_commit() {
