@@ -3,4 +3,4 @@ pr:
 commands:
   prepare: sh scripts/gate-prepare.sh
   test: ./gradlew testDebugUnitTest
-  lint: ./gradlew lintDebug
+  lint: sh scripts/privacy-check.sh && ./gradlew lintDebug

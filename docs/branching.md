@@ -32,7 +32,17 @@ Keep existing unpublished feature work on its branch. Bring it up to date with `
 
 Create a `release/*` branch from the validated `dev` commit, then run no-mistakes with `--base-branch main`. This lets the gate publish fixes without pushing directly to protected `dev`. The release pull request must pass CI against the current `main` before merging.
 
-CI runs on pull requests into either branch and on pushes after merges. The required `build-test` job runs Android lint, JVM unit tests and a debug APK build with JDK 21. A failed step blocks the merge.
+CI runs on pull requests into either branch and on pushes after merges. The required `build-test` job runs the privacy check, Android lint, JVM unit tests and a debug APK build with JDK 21. A failed step blocks the merge.
+
+## Privacy check
+
+`scripts/privacy-check.sh` fails when a tracked file contains a home directory path, or an email address outside the GitHub noreply and example domains. It also fails on an image outside `docs/assets/` and the app's `res/` folders, on EduPage-shaped JSON outside `app/src/test/resources/fixtures/`, and on an EduPage-shaped JSON fixture larger than 20,000 bytes. With `--commits <range>` it also scans commit messages for home directory paths and email addresses.
+
+Placeholders such as `/Users/<name>` or `/home/$USER` pass. The script does not look for phone numbers, because the app handles none; the manual diff check covers them. If the check flags ordinary text, reword it rather than weakening the rules.
+
+CI runs the script and its tests on pull requests into `main` or `dev` and on pushes to either branch. Pull request runs also scan the commit messages in the base-to-head range. The no-mistakes lint step scans tracked files before Android lint. To scan locally, run `sh scripts/privacy-check.sh` from the repository root with Git and Python 3 on `PATH`. `sh scripts/privacy-check-test.sh` tests the script itself.
+
+The script cannot detect real names. Reading the staged diff before each commit is still required.
 
 Passing CI does not verify every device interaction. Before promoting app behavior changes, test them on an emulator or device. Keep real timetable data and screenshots containing it out of the repository. README screenshots must use invented data.
 
