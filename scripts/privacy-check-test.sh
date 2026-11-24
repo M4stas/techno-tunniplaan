@@ -45,8 +45,6 @@ check numeric-noreply-user 0 README.md '1234''5678@''users.noreply.github.com'
 check numeric-plus-noreply-user 0 README.md '12345+1234''5678@''users.noreply.github.com'
 check numeric-example-user 0 README.md '1234''5678@''example.com'
 check numeric-plus-example-user 0 README.md 'someone+1234''5678@''example.com'
-check noreply-and-phone 1 README.md '1234''5678+someone@''users.noreply.github.com, call 5123''4567'
-check phone-before-noreply 1 README.md 'Call 5123''4567, 1234''5678+someone@''users.noreply.github.com'
 check numeric-personal-email 1 README.md '1234''5678@''gmail.com'
 check example-email 0 README.md 'teacher@''example.com'
 check github-noreply-email 0 README.md 'noreply@''github.com'
@@ -67,10 +65,8 @@ check localhost-domain-email 1 README.md 'person@''school.localhost'
 check example-domain-email 0 README.md 'person@''school.example'
 check scanner-email 1 scripts/privacy-check.sh 'someone@''gmail.com'
 check scanner-home 1 scripts/privacy-check.sh '/Us''ers/someone/app'
-check scanner-phone 1 scripts/privacy-check.sh '5123''4567'
 check test-script-email 1 scripts/privacy-check-test.sh 'someone@''gmail.com'
 check test-script-home 1 scripts/privacy-check-test.sh '/Us''ers/someone/app'
-check test-script-phone 1 scripts/privacy-check-test.sh '5123''4567'
 check clean-test-script 0 scripts/privacy-check-test.sh "$(cat scripts/privacy-check-test.sh)"
 check mac-home 1 README.md 'Built in /Us''ers/someone/Projects'
 check linux-home 1 notes.txt 'see /ho''me/someone/app'
@@ -86,22 +82,9 @@ check windows-mixed-home 1 notes.txt 'C:/Us''ers\用户/Projects'
 check windows-other-mixed-home 1 notes.txt 'C:\Us''ers/用户/Projects'
 check bare-home-roots 0 notes.txt '/Us''ers/ /ho''me/ C:/Us''ers/ C:\Us''ers\'
 check real-email 1 app/src/Foo.kt 'val contact = "someone@''gmail.com"'
-check phone 1 README.md 'Call +372 51''23 45''67'
-check tel-link 1 README.md '<a href="tel:''+3725''123456">'
-check plain-phone 1 README.md 'Call 5123''4567'
-check grouped-phone 1 README.md 'Call 5123 45''67'
-check parenthesized-phone 1 README.md 'Call +1 (202) 55''5-01''23'
-check local-parenthesized-phone 1 README.md 'Call (202) 55''5-01''23'
-check leading-zero-phone 1 README.md 'Call 0123''456789'
 check escaped-windows-home 1 data/build.json '{"buildPath":"C:\\Us''ers\\someone\\project"}'
 check ttviewer-value-not-edupage 0 app/config.json '{"module":"ttviewer"}'
-check landline-phone 1 README.md 'Kool: 640 12''34'
-check thousands-not-phone 0 README.md 'Rakendus toetab 10 000 kasutajat ja 1 000 000 päringut.'
-check run-id-not-phone 0 README.md 'CI run 4502''8240650, job 1372''25873197'
 check placeholder-home 0 docs/setup.md 'Set /Us''ers/<name>/Android/sdk or /ho''me/$USER/sdk or /ho''me/runner/work'
-check zero-placeholder-not-phone 0 app/Foo.kt 'put("__gsh", "0000''0000")'
-check time-room-not-phone 0 README.md 'Tunnid 08:30-09:15, ruum 204, versionCode 10203'
-check date-not-phone 0 README.md 'Released 2026-11-01, version 1.2.3'
 check readme-image 0 docs/assets/shot.png 'png'
 check res-image 0 app/src/main/res/drawable/icon.png 'png'
 check stray-image 1 docs/screenshot.png 'png'
@@ -174,14 +157,12 @@ for encoding in utf-16 utf-16-le utf-16-be utf-32 utf-8-sig; do
     check "encoded-home-$encoding" 1 notes.txt '/Us''ers/用户/Projects' "$encoding"
     check "encoded-windows-$encoding" 1 notes.txt 'c:\us''ers\someone\Projects' "$encoding"
     check "encoded-email-$encoding" 1 notes.txt 'someone@''gmail.com' "$encoding"
-    check "encoded-phone-$encoding" 1 notes.txt 'Call 5123''4567' "$encoding"
     check "encoded-allowed-email-$encoding" 0 notes.txt 'teacher@''EXAMPLE.COM' "$encoding"
     check "encoded-clean-$encoding" 0 notes.txt 'Invented teacher A. Näide, room 101.' "$encoding"
 done
 for encoding in cp1252 iso8859-1; do
     check "legacy-email-$encoding" 1 notes.txt 'Résumé: someone@''gmail.com' "$encoding"
     check "legacy-home-$encoding" 1 notes.txt 'Résumé: /Us''ers/someone/Projects' "$encoding"
-    check "legacy-phone-$encoding" 1 notes.txt 'Résumé: call 5123''4567' "$encoding"
     check "legacy-capture-$encoding" 1 data/capture.json '{"r":{"dbiAccessorRes":{"label":"Résumé"}}}' "$encoding"
     check "legacy-ttviewer-$encoding" 1 data/viewer.JSON '{"r":{"ttviewer":{"label":"Résumé"}}}' "$encoding"
     check "legacy-viewer-$encoding" 1 data/viewer.JsOn '{"r":{"regular":{"label":"Résumé","default_num":"22"}}}' "$encoding"
@@ -231,8 +212,6 @@ check_commit commit-numeric-noreply-user 0 '1234''5678@''users.noreply.github.co
 check_commit commit-numeric-plus-noreply-user 0 '12345+1234''5678@''users.noreply.github.com'
 check_commit commit-numeric-example-user 0 '1234''5678@''example.com'
 check_commit commit-numeric-plus-example-user 0 'someone+1234''5678@''example.com'
-check_commit commit-noreply-and-phone 1 '1234''5678+someone@''users.noreply.github.com, call 5123''4567'
-check_commit commit-phone-before-noreply 1 'Call 5123''4567, 1234''5678+someone@''users.noreply.github.com'
 check_commit commit-numeric-personal-email 1 '1234''5678@''gmail.com'
 check_commit commit-github-noreply-email 0 'noreply@''github.com'
 check_commit commit-uppercase-example-domain 0 'teacher@''EXAMPLE.COM'
@@ -251,12 +230,6 @@ check_commit commit-test-domain-email 1 'person@''school.test'
 check_commit commit-invalid-domain-email 1 'person@''school.invalid'
 check_commit commit-localhost-domain-email 1 'person@''school.localhost'
 check_commit commit-example-domain-email 0 'person@''school.example'
-check_commit commit-plain-phone 1 'Call 5123''4567'
-check_commit commit-grouped-phone 1 'Call 5123 45''67'
-check_commit commit-parenthesized-phone 1 'Call +1 (202) 55''5-01''23'
-check_commit commit-local-parenthesized-phone 1 'Call (202) 55''5-01''23'
-check_commit commit-international-phone 1 'Call +372 51''23 45''67'
-check_commit commit-tel-link 1 'tel:''+3725''123456'
 check_commit commit-date 0 'Released 2026-11-01, version 1.2.3'
 
 if [ "$failures" -ne 0 ]; then

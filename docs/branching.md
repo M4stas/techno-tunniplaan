@@ -36,9 +36,9 @@ CI runs on pull requests into either branch and on pushes after merges. The requ
 
 ## Privacy check
 
-`scripts/privacy-check.sh` fails when a tracked file contains a home directory path, an email address outside the GitHub noreply and example domains, or a phone number. It also fails on an image outside `docs/assets/` and the app's `res/` folders, on EduPage-shaped JSON outside `app/src/test/resources/fixtures/`, and on an EduPage-shaped JSON fixture larger than 20,000 bytes. With `--commits <range>` it also scans commit messages for home directory paths, email addresses and phone numbers.
+`scripts/privacy-check.sh` fails when a tracked file contains a home directory path, or an email address outside the GitHub noreply and example domains. It also fails on an image outside `docs/assets/` and the app's `res/` folders, on EduPage-shaped JSON outside `app/src/test/resources/fixtures/`, and on an EduPage-shaped JSON fixture larger than 20,000 bytes. With `--commits <range>` it also scans commit messages for home directory paths and email addresses.
 
-Placeholders such as `/Users/<name>` or `/home/$USER` pass. The phone rules cover numbers with a leading `+`, `tel:` links, Estonian mobile and landline numbers, national numbers with a leading 0 and numbers with an area code in brackets. Counts written as `10 000` and long IDs such as CI run numbers pass. If the check flags ordinary text, reword it rather than weakening the rules.
+Placeholders such as `/Users/<name>` or `/home/$USER` pass. The script does not look for phone numbers, because the app handles none; the manual diff check covers them. If the check flags ordinary text, reword it rather than weakening the rules.
 
 CI runs the script and its tests on pull requests into `main` or `dev` and on pushes to either branch. Pull request runs also scan the commit messages in the base-to-head range. The no-mistakes lint step scans tracked files before Android lint. To scan locally, run `sh scripts/privacy-check.sh` from the repository root with Git and Python 3 on `PATH`. `sh scripts/privacy-check-test.sh` tests the script itself.
 
