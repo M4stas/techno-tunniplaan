@@ -18,9 +18,18 @@ import sys
 image_dirs = r"^(docs/assets/|app/src/[^/]+/res/)"
 fixture_dir = "app/src/test/resources/fixtures/"
 fixture_max_bytes = 20000
-home_path = re.compile(r"(/[U]sers/|/[h]ome/|[A-Za-z]:[/\\][Uu][Ss][Ee][Rr][Ss][/\\])[^/\\\s]+")
+# A username placeholder such as <name>, $USER or {user} is not a real home path.
+home_path = re.compile(r"(/[U]sers/|/[h]ome/|[A-Za-z]:(/|\\+)[Uu][Ss][Ee][Rr][Ss](/|\\+))(?![<${%*]|(?i:user|username|yourname|name|runner)([/\\\s]|$))[^/\\\s]+")
 email = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
-phone = re.compile(r"(\+[0-9]{1,3}[ -]?[0-9]{2,4}[ -]?[0-9]{3,4}([ -]?[0-9]{2,4})?|(^|[^\w.])[1-9][0-9]{7,14}([^\w.]|$)|(^|[^\w.])([0-9]{2,4}[ -]){1,3}[0-9]{3,4}([^\w.]|$)|tel:[+0-9])", re.MULTILINE)
+# Phone numbers, kept narrow so counts like "10 000" and long IDs such as CI run numbers pass.
+phone = re.compile(
+    r"\+\d{1,3}[\s().-]*(\d[\s().-]*){6,14}"  # international, with a leading +
+    r"|tel:[+0-9]"
+    r"|(?<![\w.+])5\d{2,3}[ -]?\d{3,4}(?![\w.])"  # Estonian mobile: 7 or 8 digits starting with 5
+    r"|(?<![\w.+])[3467]\d{2}[ -]?\d{4}(?![\w.])"  # Estonian landline: 7 digits starting with 3, 4, 6 or 7
+    r"|(?<![\w.+])0[1-9]\d{1,3}[ -]?\d{3,4}[ -]?\d{2,4}(?![\w.])"  # national format with a leading 0
+    r"|\(\d{2,4}\)\s*\d{3}[ -]?\d{3,4}(?![\w.])"  # area code in brackets
+)
 failed = False
 
 
@@ -80,7 +89,7 @@ for raw_path in paths:
     scan_text(text, repr(name))
     if not name.lower().endswith(".json"):
         continue
-    marked = re.search(r'"dbiAccessorRes"|"ttviewer"', text)
+    marked = re.search(r'"(dbiAccessorRes|ttviewer)"\s*:', text)
     if not marked:
         try:
             marked = edupage_shape(json.loads(text))
@@ -94,8 +103,12 @@ for raw_path in paths:
         report(f"EduPage fixture larger than {fixture_max_bytes} bytes, which suggests a captured response: {name!r}")
 
 if len(sys.argv) > 2 and sys.argv[1] == "--commits" and sys.argv[2]:
-    messages = subprocess.check_output(["git", "log", "--format=%h %B", sys.argv[2]])
-    scan_text(messages.decode("utf-8", errors="replace"), f"commit messages in {sys.argv[2]}")
+    # Scan each message on its own, without the hash: a hash of digits can look like a phone number.
+    log = subprocess.check_output(["git", "log", "--format=%h%x00%B%x1e", sys.argv[2]])
+    for entry in log.decode("utf-8", errors="replace").split("\x1e"):
+        commit, _, message = entry.strip("\n").partition("\0")
+        if commit:
+            scan_text(message, f"commit message of {commit}")
 
 if failed:
     print("privacy-check: failed. Remove the data, or use invented values in fixtures.", file=sys.stderr)
